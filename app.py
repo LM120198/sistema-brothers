@@ -29,7 +29,7 @@ def conectar_banco():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS blog (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            Titulo TEXT, Autor TEXT, Data TEXT, Categoria TEXT, Content TEXT, Imagem_Url TEXT
+            Titulo TEXT, Autor TEXT, Data TEXT, Categoria TEXT, Conteudo TEXT, Imagem_Url TEXT
         )
     """)
     cursor.execute("CREATE TABLE IF NOT EXISTS controle_rodizio (id INTEGER PRIMARY KEY, ultimo_indice INTEGER)")
@@ -86,7 +86,7 @@ def salvar_post(titulo, autor, categoria, conteudo, url_img):
     conn = sqlite3.connect("brothers.db")
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO blog (Titulo, Autor, Data, Categoria, Content, Imagem_Url)
+        INSERT INTO blog (Titulo, Autor, Data, Categoria, Conteudo, Imagem_Url)
         VALUES (?, ?, ?, ?, ?, ?)
     """, (titulo, autor, data_atual, categoria, conteudo, url_img))
     conn.commit()
@@ -104,6 +104,25 @@ def atualizar_status(df_editado):
     conn.commit()
     conn.close()
 
+# --- ALIMENTAÇÃO INICIAL DO BLOG ---
+def inicializar_conteudo_blog():
+    conn = sqlite3.connect("brothers.db")
+    cursor = conn.cursor()
+    if cursor.execute("SELECT COUNT(*) FROM blog").fetchone()[0] == 0:
+        posts_iniciais = [
+            (
+                "Como o Banco Analisa Seu Perfil Quando Você Pede um Empréstimo?",
+                "Lucas - Central Brothers", "Dicas Práticas",
+                "Muitas pessoas pagam suas contas em dia, mas continuam recebendo respostas negativas ao tentar um financiamento. O motivo real está nas consultas em massa que as lojas fazem no seu CPF, derrubando o score interno do mercado de forma injusta. Para corrigir isso e forçar os bancos a liberarem crédito limpo, nossa equipe atua direto na raiz do problema removendo esses rastros de forma definitiva.",
+                "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=60"
+            )
+        ]
+        cursor.executemany("INSERT INTO blog (Titulo, Autor, Categoria, Conteudo, Imagem_Url, Data) VALUES (?, ?, ?, ?, ?, '06/06/2026')", posts_iniciais)
+        conn.commit()
+    conn.close()
+
+inicializar_conteudo_blog()
+
 # --- ARQUIVO CENTRAL DE ESTILO, INTRO ANIMADA E MASCOTE FIXED ---
 st.markdown("""
 <style>
@@ -115,10 +134,6 @@ st.markdown("""
         90% { opacity: 1; }
         100% { opacity: 0; visibility: hidden; }
     }
-    @keyframes goldChuva {
-        0% { background-position: 0px 0px; }
-        100% { background-position: 0px 1000px; }
-    }
     @keyframes logoPulse {
         0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px #FFD700); }
         50% { transform: scale(1.05); filter: drop-shadow(0 0 25px #FFD700); }
@@ -128,14 +143,14 @@ st.markdown("""
         position: fixed !important;
         top: 0; left: 0; width: 100vw; height: 100vh;
         background-color: #07070a;
-        background-image: linear-gradient(rgba(255, 215, 0, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 215, 0, 0.03) 1px, transparent 1px);
+        background-image: linear-gradient(rgba(255, 215, 0, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 215, 0, 0.02) 1px, transparent 1px);
         background-size: 30px 30px;
         z-index: 9999999 !important;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        animation: fadeOutIntro 2.8s ease forwards;
+        animation: fadeOutIntro 2.5s ease forwards;
         pointer-events: none;
     }
     
@@ -241,7 +256,7 @@ membros_db = carregar_dados()
 blog_db = carregar_posts()
 
 # =========================================================================
-# 🌐 VISÃO PÚBLICA (PORTAL PREMIUM TOTALMENTE INTERATIVO)
+# 🌐 VISÃO PÚBLICA (PORTAL PREMIUM TOTALMENTE ANIMADO E INTERATIVO)
 # =========================================================================
 if not st.session_state.autenticado:
     
@@ -291,7 +306,7 @@ if not st.session_state.autenticado:
         st.markdown("### 🦅 Solicite Uma Análise Gratuita do Seu Caso")
         with st.form("form_portal", clear_on_submit=True):
             nome = st.text_input("Seu Nome Completo ou Razão Social:")
-            whatsapp = st.text_input("WhatsApp com DDD (Somente números):", placeholder="Ex: 11948086926")
+            whatsapp = st.text_input("WhatsApp com DDD (Somente numbers):", placeholder="Ex: 11948086926")
             data_nascimento = st.date_input("Data de Nascimento ou Fundação:", min_value=datetime.date(1940, 1, 1))
             servico = st.selectbox("Qual o maior problema hoje?", ["Quero Limpar meu Nome / Subir meu Score Urgente", "Preciso de Empréstimo com Juros Baixos", "Quero Investimentos Lucrativos", "Quero Networking na Comunidade"])
             detalhes = st.text_area("Conte resumidamente o que aconteceu:")
@@ -331,7 +346,7 @@ if not st.session_state.autenticado:
     with st.expander("Eu vou ter que pagar alguma coisa antes do meu processo iniciar?"):
         st.write("Nossa análise inicial é 100% gratuita via WhatsApp. Só fechamos após mostrar o que está travando o seu perfil.")
 
-    # SEÇÃO DO BLOG COM "LEIA MAIS"
+    # SEÇÃO DO BLOG CORRIGIDA (MUDADO DE 'Content' PARA 'Conteudo')
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>📰 Dicas da Nossa Equipe - Aprenda a Cuidar do Seu Crédito</h2>", unsafe_allow_html=True)
     if not blog_db.empty:
@@ -342,7 +357,7 @@ if not st.session_state.autenticado:
             with col_artigo:
                 st.markdown(f"🏷️ `{post['Categoria']}` | 📅 *Publicado em {post['Data']}*")
                 st.markdown(f"### {post['Titulo']}")
-                resumo_limpo = post['Content'].replace("<p>", "").replace("</p>", "").replace("<br>", " ")[:180] + "..."
+                resumo_limpo = post['Conteudo'].replace("<p>", "").replace("</p>", "").replace("<br>", " ")[:180] + "..."
                 st.markdown(resumo_limpo, unsafe_allow_html=True)
                 
                 if st.button("📖 Ler Artigo Didático Completo", key=f"pub_btn_{post['id']}"):
@@ -350,7 +365,7 @@ if not st.session_state.autenticado:
                     def render_dialog():
                         st.markdown(f"✍️ *Por {post['Autor']} em {post['Data']}*")
                         st.markdown("<hr>", unsafe_allow_html=True)
-                        st.markdown(post['Content'], unsafe_allow_html=True)
+                        st.markdown(post['Conteudo'], unsafe_allow_html=True)
                     render_dialog()
             st.markdown("<br><hr style='border-top: 1px solid #222;'><br>", unsafe_allow_html=True)
 
