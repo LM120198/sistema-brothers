@@ -81,14 +81,14 @@ def salvar_membro(nome, whats, data_nasci, msg):
     conn.commit()
     conn.close()
 
-def salvar_post(titulo, autor, categoria, conteudo, url_img):
+def salvar_post(titulo, autor, category, conteudo, url_img):
     data_atual = datetime.date.today().strftime("%d/%m/%Y")
     conn = sqlite3.connect("brothers.db")
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO blog (Titulo, Autor, Data, Categoria, Conteudo, Imagem_Url)
         VALUES (?, ?, ?, ?, ?, ?)
-    """, (titulo, autor, data_atual, categoria, conteudo, url_img))
+    """, (titulo, autor, data_atual, category, conteudo, url_img))
     conn.commit()
     conn.close()
 
@@ -104,28 +104,116 @@ def atualizar_status(df_editado):
     conn.commit()
     conn.close()
 
-# --- ANIMAÇÕES E TRANSICÕES SEGURAS (NÃO TRAVAM O SITE) ---
+# --- ENGINE VISUAL: CSS DAS ANIMAÇÕES E DO BALÃO DE DIÁLOGO ---
 st.markdown("""
 <style>
-    @keyframes pulseGold {
-        0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(255,215,0,0.4)); }
-        50% { transform: scale(1.03); filter: drop-shadow(0 0 10px rgba(255,215,0,0.7)); }
-        100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(255,215,0,0.4)); }
+    /* Layout Base */
+    .stApp {
+        background-color: #0e0e12;
     }
-    .mascote-animado {
-        animation: pulseGold 3s ease-in-out infinite;
-        font-size: 3.5rem;
-        text-align: center;
+    
+    /* Estrutura do Mascote Flutuante */
+    .eagle-holder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    
+    .eagle-avatar {
+        font-size: 4rem;
         user-select: none;
+        display: inline-block;
+        transition: transform 0.2s ease;
     }
-    .card-institucional {
+    
+    /* Animação Física de Flutuar Contínuo */
+    .float-animation {
+        animation: eagleFloat 3s ease-in-out infinite;
+    }
+    @keyframes eagleFloat {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-12px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    /* Animação de Pulo quando o robô fala */
+    .bounce-animation {
+        animation: eagleBounce 0.6s ease;
+    }
+    @keyframes eagleBounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-25px); }
+    }
+
+    /* Balão de Fala do Mascote (Estilo Inteligente) */
+    .speech-bubble {
+        position: relative;
         background: #1a1a24;
-        padding: 20px;
+        border: 1px solid #FFD700;
         border-radius: 8px;
-        border-left: 4px solid #FFD700;
+        padding: 12px;
+        color: #fff;
+        font-size: 13px;
+        text-align: center;
+        width: 180px;
         margin-bottom: 15px;
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+    }
+    .speech-bubble:after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        margin-left: -10px;
+        border-width: 10px 10px 0;
+        border-style: solid;
+        border-color: #1a1a24 transparent;
+        display: block;
+        width: 0;
     }
 </style>
+
+<!-- SCRIPT DE INTELIGÊNCIA INTERATIVA (JAVASCRIPT SEGURO) -->
+<script>
+    let tempoInativo;
+    
+    function resetTimer() {
+        clearTimeout(tempoInativo);
+        // Se o cliente se mexer, o mascote volta a ficar calmo e focado
+        let bubble = parent.document.getElementById("bot-bubble");
+        let avatar = parent.document.getElementById("bot-avatar");
+        if(bubble && bubble.innerText.includes("parado")) {
+            bubble.innerHTML = "🦅 <b>EagleBot:</b> Estou monitorando seu perfil. Prossiga!";
+            avatar.classList.remove("bounce-animation");
+            avatar.classList.add("float-animation");
+        }
+        // Dispara o alerta se ficar 15 segundos sem tocar em nada
+        tempoInativo = setTimeout(dispararAlertaInatividade, 15000);
+    }
+    
+    function dispararAlertaInatividade() {
+        let bubble = parent.document.getElementById("bot-bubble");
+        let avatar = parent.document.getElementById("bot-avatar");
+        if(bubble && avatar) {
+            // Mudança de comportamento física e textual
+            bubble.innerHTML = "⚠️ <b>EagleBot:</b> Ei! Você travou aí? Não perca tempo, use o termômetro ao lado e garanta sua vaga na Brothers!";
+            avatar.classList.remove("float-animation");
+            avatar.classList.add("bounce-animation");
+        }
+    }
+    
+    // Monitora cliques, movimentos do mouse e rolagens na tela do cliente
+    window.onload = resetTimer;
+    window.onmousemove = resetTimer;
+    window.onmousedown = resetTimer;
+    window.ontouchstart = resetTimer;
+    window.onclick = resetTimer;
+    window.onkeydown = resetTimer;
+    window.addEventListener('scroll', resetTimer, true);
+</script>
 """, unsafe_allow_html=True)
 
 # --- CONTROLE DE ACESSO ---
@@ -135,8 +223,8 @@ if "autenticado" not in st.session_state:
 st.sidebar.title("🦅 Área Restrita")
 if not st.session_state.autenticado:
     with st.sidebar.form("login_form"):
-        st.markdown("<div class='mascote-animado'>🦅</div>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; color:#FFD700;'><b>EagleBot:</b> Área Protegida!</p>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; font-size:2.5rem;'>🦅</div>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; color:#FFD700; margin-top:0;'><b>Área Restrita dos Sócios</b></p>", unsafe_allow_html=True)
         usuario = st.text_input("Usuário:")
         senha = st.text_input("Senha:", type="password")
         if st.form_submit_button("Acessar Painel"):
@@ -155,18 +243,25 @@ membros_db = carregar_dados()
 blog_db = carregar_posts()
 
 # =========================================================================
-# 🌐 VISÃO PÚBLICA (PORTAL COMPLETO - DIDÁTICO E ACESSÍVEL)
+# 🌐 VISÃO PÚBLICA: MASCOTE TOTALMENTE INTERATIVO E RESPONSIVO
 # =========================================================================
 if not st.session_state.autenticado:
     
-    # Header com Interação Dinâmica do Mascote EagleBot
-    col_h1, col_h2 = st.columns([5, 1])
+    # Layout Superior: Portal + Mascote Reativo
+    col_h1, col_h2 = st.columns([4, 1.2])
     with col_h1:
         st.markdown("<h1 style='color: #FFD700; font-size: 3.5rem; font-weight: 800; margin-bottom:0;'>BROTHERS NETWORK FINANCE</h1>", unsafe_allow_html=True)
         st.markdown("<p style='color: #FFFFFF; font-size: 1.3rem; font-weight: 300;'>Seu Nome Limpo de Verdade, Score Alto e Entrada nos Melhores Créditos do País</p>", unsafe_allow_html=True)
     with col_h2:
-        st.markdown("<div class='mascote-animado'>🦅</div>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; color:#FFD700; font-size:11px; margin-top:0;'><b>EagleBot Auxiliar</b></p>", unsafe_allow_html=True)
+        # Renderização das IDs que o JavaScript usa para controlar o comportamento do pet
+        st.markdown("""
+        <div class="eagle-holder">
+            <div id="bot-bubble" class="speech-bubble">
+                🦅 <b>EagleBot:</b> Seja bem-vindo! Pronto para destravar sua vida financeira?
+            </div>
+            <div id="bot-avatar" class="eagle-avatar float-animation">🦅</div>
+        </div>
+        """, unsafe_allow_html=True)
         
     st.image("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&auto=format&fit=crop&q=80", use_container_width=True)
     st.write("\n")
@@ -178,7 +273,7 @@ if not st.session_state.autenticado:
         st.markdown("## 🏢 Como Nós Ajudamos Você e Sua Empresa")
         st.write("Estar com as portas do banco fechadas impede você de evoluir. Nosso time remove os rastros e consultas antigas que detonam seu perfil de forma justa, rápida e sem complicação.")
         
-        # Termômetro Interativo Seguro
+        # Termômetro Interativo
         st.markdown("### 📊 Teste Seu Score Abaixo:")
         score_usuario = st.slider("Selecione seu Score aproximado:", min_value=0, max_value=1000, value=350, step=10)
         
@@ -222,7 +317,7 @@ if not st.session_state.autenticado:
     with col_hist1:
         st.image("https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&auto=format&fit=crop&q=60", use_container_width=True)
     with col_hist2:
-        st.markdown("<div class='card-institucional'><b>A União de Finanças e Direito</b><br>A Brothers Network Finance é formada por especialistas focados em direito bancário e mercado financeiro. Nosso propósito diário é quebrar as amarras burocráticas injustas dos bancos para que você recupere sua tranquilidade comercial de forma definitiva.</div>", unsafe_allow_html=True)
+        st.write("A **Brothers Network Finance** é formada por especialistas focados em direito bancário e mercado financeiro. Nosso propósito diário é quebrar as amarras burocráticas injustas dos bancos para que você recupere sua tranquilidade comercial de forma definitiva.")
 
     # DEPOIMENTOS
     st.markdown("---")
@@ -244,7 +339,7 @@ if not st.session_state.autenticado:
     with st.expander("Eu vou ter que pagar alguma coisa antes do meu processo iniciar?"):
         st.write("Nossa análise inicial é 100% gratuita via WhatsApp. Só fechamos após mostrar o que está travando o seu perfil.")
 
-    # SEÇÃO DO BLOG COM O SISTEMA LEIA MAIS REPARADO
+    # BLOG
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>📰 Dicas da Nossa Equipe - Aprenda a Cuidar do Seu Crédito</h2>", unsafe_allow_html=True)
     if not blog_db.empty:
@@ -268,23 +363,12 @@ if not st.session_state.autenticado:
             st.markdown("<br><hr style='border-top: 1px solid #222;'><br>", unsafe_allow_html=True)
 
 # =========================================================================
-# 📊 VISÃO PRIVADA (100% ESTÁVEL, SEM RISCO DE TELA PRETA)
+# 📊 VISÃO PRIVADA (CRM INTERNO PROTEGIDO)
 # =========================================================================
 else:
-    col_adm1, col_adm2 = st.columns([5, 1])
-    with col_adm1:
-        st.title("🦅 Central Administrativa Master - Brothers Network")
-    with col_adm2:
-        st.markdown("<div class='mascote-animado'>🦅</div>", unsafe_allow_html=True)
+    st.title("🦅 Central Administrativa Master - Brothers Network")
+    aba_gestao, aba_calendario, aba_analytics, aba_novo_blog = st.tabs(["📊 Gerenciador de Tarefas e Disparos", "📅 Calendário de Relacionamento", "📈 Dashboard de Performance", "✍️ Publicar Novo Conteúdo no Blog"])
 
-    aba_gestao, aba_calendario, aba_analytics, aba_novo_blog = st.tabs([
-        "📊 Gerenciador de Tarefas e Disparos", 
-        "📅 Calendário de Relacionamento", 
-        "📈 Dashboard de Performance", 
-        "✍️ Publicar Novo Conteúdo no Blog"
-    ])
-
-    # --- ABA 1: CRM ---
     with aba_gestao:
         st.subheader("Esteira de Atendimento Dinâmica")
         if membros_db.empty:
@@ -294,7 +378,7 @@ else:
             for idx, row in membros_db.iterrows():
                 resp = row['Responsavel'] if 'Responsavel' in row and row['Responsavel'] else "Lucas"
                 if row['T1_BoasVindas'] == 'Pendente':
-                    txt = f"Olá {row['Nome']}, bem-vindo! Sou o gestor {resp}. Recebemos sua solicitação. Vamos iniciar?"
+                    txt = f"Olá {row['Nome']}, bem-vindo! Sou o gestor {resp}. Recebemos sua solicitação sobre seu Score. Vamos iniciar?"
                 else:
                     txt = f"Olá {row['Nome']}, gestor {resp} acompanhando seu caso."
                 links_dinamicos.append(f"https://api.whatsapp.com/send?phone={row['WhatsApp']}&text={urllib.parse.quote(txt)}")
@@ -325,7 +409,6 @@ else:
                 st.success("Alterações gravadas com sucesso!")
                 st.rerun()
 
-    # --- ABA 2: CALENDÁRIO ---
     with aba_calendario:
         st.subheader("📅 Calendário de Relacionamento de Aniversariantes")
         hoje = datetime.date.today()
@@ -351,33 +434,22 @@ else:
                             st.link_button("🎉 Enviar Mensagem", f"https://api.whatsapp.com/send?phone={row['WhatsApp']}&text={urllib.parse.quote(msg_p)}")
                         st.markdown("---")
 
-    # --- ABA 3: DASHBOARD ---
     with aba_analytics:
         st.subheader("Dashboard de Performance Geral")
         if not membros_db.empty:
             st.metric(label="👥 Total de Leads Capturados", value=len(membros_db))
             st.bar_chart(membros_db["Responsavel"].value_counts(), use_container_width=True)
 
-    # --- ABA 4: PUBLICADOR DO BLOG INTEGRADO (SEGURO E FUNCIONAL) ---
     with aba_novo_blog:
-        st.subheader("✍️ Criador de Conteúdo Didático para o Blog")
-        st.markdown("Monte seu artigo usando as marcações seguras abaixo para formatar trechos específicos do seu texto à vontade:")
+        st.subheader("✍️ Criador de Conteúdo Livre")
+        st.markdown("Cole o seu texto livremente. Se quiser dar formato em partes específicas, use HTML direto no campo:")
+        st.code("Exemplos:\n<b>Texto em Negrito</b>\n<i>Texto em Itálico</i>\n<span style='color: gold;'>Texto Dourado</span>")
         
-        col_help1, col_help2 = st.columns(2)
-        with col_help1:
-            st.code("Para deixar em NEGRITO:\n<b>Sua palavra aqui</b>\n\nPara deixar em ITÁLICO:\n<i>Sua palavra aqui</i>")
-        with col_help2:
-            st.code("Para criar um SUBTÍTULO:\n<h3>Seu Subtítulo aqui</h3>\n\nPara deixar o TEXTO DOURADO:\n<span style='color: gold;'>Seu texto</span>")
-            
         b_titulo = st.text_input("Título da Postagem:")
         b_autor = st.text_input("Autor da Publicação:", value="Lucas - Central Brothers")
         b_cat = st.selectbox("Categoria Operacional:", ["Dicas Práticas", "Inteligência Financeira", "Passo a Passo", "Novidades do Hub"])
-        b_img = st.text_input("URL da Imagem de Destaque (Link público):")
-        
-        b_conteudo = st.text_area("Escreva o artigo completo inserindo as marcações acima onde desejar aplicar as formatações específicas:", height=250)
-        
-        st.markdown("#### 👁️ Pré-visualização Real do Artigo:")
-        st.markdown(f"<div style='background-color: #1a1a24; padding: 20px; border-radius: 8px; border: 1px solid #333;'>{b_conteudo}</div>", unsafe_allow_html=True)
+        b_img = st.text_input("URL da Imagem de Destaque:")
+        b_conteudo = st.text_area("Escreva aqui o artigo completo com as tags que desejar:", height=300)
         
         if st.button("💥 ENVIAR E PUBLICAR ARTIGO IMEDIATAMENTE", type="primary"):
             if b_titulo and b_conteudo:
@@ -385,4 +457,4 @@ else:
                 st.success("🔥 Artigo publicado com sucesso!")
                 st.rerun()
             else:
-                st.error("Preencha o Título e o Conteúdo antes de publicar.")
+                st.error("Preencha o Título e o Conteúdo.")
