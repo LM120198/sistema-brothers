@@ -5,10 +5,10 @@ import calendar
 import sqlite3
 import urllib.parse
 
-# Configuração da página - Estável de Alta Performance
+# Configuração da página - Tema Escuro e Amplo de Alta Performance
 st.set_page_config(page_title="Brothers Network Finance - Oficial", layout="wide", initial_sidebar_state="collapsed")
 
-# --- CONEXÃO E ESTRUTURA DO BANCO DE DADOS (100% ESTÁVEL) ---
+# --- CONEXÃO E ESTRUTURA DO BANCO DE DADOS (100% PRESERVADA) ---
 def conectar_banco():
     conn = sqlite3.connect("brothers.db")
     cursor = conn.cursor()
@@ -124,6 +124,26 @@ def inicializar_conteudo_blog():
 
 inicializar_conteudo_blog()
 
+# --- ANIMAÇÕES E IDENTIDADE VISUAL PREMIUM ---
+st.markdown("""
+<style>
+    .stApp {
+        background-image: radial-gradient(circle, rgba(20,20,25,1) 0%, rgba(10,10,12,1) 100%);
+        position: relative;
+    }
+    @keyframes floatMascot {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+        100% { transform: translateY(0px); }
+    }
+    .mascote-container {
+        animation: floatMascot 3.5s ease-in-out infinite;
+        text-align: center;
+        padding: 5px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # --- CONTROLE DE ACESSO ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
@@ -131,6 +151,7 @@ if "autenticado" not in st.session_state:
 st.sidebar.title("🦅 Área Restrita")
 if not st.session_state.autenticado:
     with st.sidebar.form("login_form"):
+        st.markdown("<div class='mascote-container'><span style='font-size: 2.5rem;'>🦅</span><br><small style='color:#FFD700;'><b>EagleBot:</b> Identifique-se, Diretor!</small></div>", unsafe_allow_html=True)
         usuario = st.text_input("Usuário:")
         senha = st.text_input("Senha:", type="password")
         if st.form_submit_button("Acessar Painel"):
@@ -149,11 +170,15 @@ membros_db = carregar_dados()
 blog_db = carregar_posts()
 
 # =========================================================================
-# 🌐 VISÃO PÚBLICA
+# 🌐 VISÃO PÚBLICA: PORTAL INSTITUCIONAL COMPLETO E DIDÁTICO
 # =========================================================================
 if not st.session_state.autenticado:
-    st.markdown("<h1 style='text-align: center; color: #FFD700; font-size: 3.5rem; font-weight: 800;'>BROTHERS NETWORK FINANCE</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #FFFFFF; font-size: 1.3rem; font-weight: 300;'>Seu Nome Limpo, Score Alto e Acesso às Melhores Linhas de Crédito</p>", unsafe_allow_html=True)
+    col_header1, col_header2 = st.columns([4, 1])
+    with col_header1:
+        st.markdown("<h1 style='color: #FFD700; font-size: 3.5rem; font-weight: 800; margin-bottom:0;'>BROTHERS NETWORK FINANCE</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #FFFFFF; font-size: 1.3rem; font-weight: 300;'>Seu Nome Limpo, Score Alto e Acesso às Melhores Linhas de Crédito</p>", unsafe_allow_html=True)
+    with col_header2:
+        st.markdown("<div class='mascote-container'><span style='font-size: 3.5rem;'>🦅</span><br><b style='color:#FFD700; font-size:11px;'>EagleBot Ativo</b></div>", unsafe_allow_html=True)
     
     st.image("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&auto=format&fit=crop&q=80", use_container_width=True)
     st.write("\n")
@@ -163,31 +188,31 @@ if not st.session_state.autenticado:
     
     with col_info:
         st.markdown("## 🏢 Como Nós Ajudamos Você e Sua Empresa")
-        st.write("Estar com o nome travado impede você de realizar seus objetivos. Nós resolvemos isso de forma simples e clara.")
+        st.write("Estar com o nome travado impede você de realizar seus objetivos profissionais e pessoais. Nós limpamos o seu rastro de forma simples, rápida e transparente.")
         
         st.markdown("### 📊 Teste Seu Score Abaixo:")
         score_usuario = st.slider("Selecione seu Score aproximado:", min_value=0, max_value=1000, value=350, step=10)
         
         if score_usuario < 400:
-            st.error(f"🚨 **Perfil Bloqueado (Score: {score_usuario}):** Os bancos negam seus pedidos. **Nossa Solução:** Limpamos seu histórico na justiça via liminar urgente.")
+            st.error(f"🚨 **Perfil Bloqueado (Score: {score_usuario}):** Os bancos negam seus pedidos automaticamente. **Nossa Solução:** Limpamos seu histórico na justiça através de liminar urgente.")
             perfil_score = "Critico"
         elif score_usuario < 700:
-            st.warning(f"⚠️ **Perfil de Risco Moderado (Score: {score_usuario}):** Sofre com juros altos. **Nossa Solução:** Calibramos seu score removendo consultas excessivas.")
+            st.warning(f"⚠️ **Perfil de Risco Moderado (Score: {score_usuario}):** Você sofre com taxas de juros abusivas. **Nossa Solução:** Removemos consultas excessivas para calibrar seu score.")
             perfil_score = "Moderado"
         else:
-            st.success(f"💎 **Perfil Elite (Score: {score_usuario}):** Pronto para o Hub VIP de networking e investimentos de alta performance.")
+            st.success(f"💎 **Perfil Elite (Score: {score_usuario}):** Totalmente pronto para o Hub VIP de networking corporativo e alocação de investimentos de alta performance.")
             perfil_score = "Premium"
             
         st.markdown("---")
-        st.write("• **Limpamos Seu Passado:** Retiramos apontamentos negativos de forma definitiva.")
-        st.write("• **Sem Enrolação:** Pedidos urgentes ao juiz antes do fim do processo.")
-        st.warning("⚠️ **Vagas Limitadas:** Atendimento semanal restrito para manter a agilidade da equipe.")
+        st.write("• **Limpamos Seu Passado:** Retiramos apontamentos negativos de forma definitiva do sistema.")
+        st.write("• **Sem Enrolação:** Pedidos urgentes direcionados ao juiz antes do fim do processo.")
+        st.warning("⚠️ **Vagas Limitadas:** Atendimento semanal restrito para manter a velocidade da equipe.")
         
     with col_form:
         st.markdown("### 🦅 Solicite Uma Análise Gratuita do Seu Caso")
         with st.form("form_portal", clear_on_submit=True):
             nome = st.text_input("Seu Nome Completo ou Razão Social:")
-            whatsapp = st.text_input("WhatsApp com DDD (Somente números):", placeholder="Ex: 11948086926")
+            whatsapp = st.text_input("WhatsApp com DDD (Ex: 11948086926):", placeholder="Somente números")
             data_nascimento = st.date_input("Data de Nascimento / Fundação:", min_value=datetime.date(1940, 1, 1))
             servico = st.selectbox("Qual o maior problema hoje?", ["Quero Limpar meu Nome / Subir meu Score Urgente", "Preciso de Empréstimo com Juros Baixos", "Quero Investimentos Lucrativos", "Quero Networking na Comunidade"])
             detalhes = st.text_area("Conte resumidamente o que aconteceu:")
@@ -208,7 +233,7 @@ if not st.session_state.autenticado:
     with col_hist1:
         st.image("https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&auto=format&fit=crop&q=60", use_container_width=True)
     with col_hist2:
-        st.write("A **Brothers Network Finance** é formada por especialistas focados em direito bancário e mercado financeiro. Nosso propósito diário é quebrar as amarras burocráticas injustas dos bancos para que você recupere sua tranquilidade comercial e cresça de verdade.")
+        st.write("A **Brothers Network Finance** é formada por especialistas focados em direito bancário e mercado financeiro. Nosso propósito diário é quebrar as amarras burocráticas injustas dos bancos para que você recupere sua tranquilidade comercial.")
 
     # DEPOIMENTOS
     st.markdown("---")
@@ -254,12 +279,18 @@ if not st.session_state.autenticado:
             st.markdown("<br><hr style='border-top: 1px solid #222;'><br>", unsafe_allow_html=True)
 
 # =========================================================================
-# 📊 VISÃO PRIVADA (CRM, CALENDÁRIO E GRÁFICOS RESTAURADOS)
+# 📊 VISÃO PRIVADA (CRM, CALENDÁRIO, GRAPHICS E O PUBLICADOR ATUALIZADO)
 # =========================================================================
 else:
     st.title("🦅 Central Administrativa Master - Brothers Network")
-    aba_gestao, aba_calendario, aba_analytics, aba_novo_blog = st.tabs(["📊 Gerenciador de Tarefas e Disparos", "📅 Calendário de Relacionamento", "📈 Dashboard de Performance", "✍ *Criar Conteúdo Manual*"])
+    aba_gestao, aba_calendario, aba_analytics, aba_novo_blog = st.tabs([
+        "📊 Gerenciador de Tarefas e Disparos", 
+        "📅 Calendário de Relacionamento", 
+        "📈 Dashboard de Performance", 
+        "✍️ Publicar Novo Conteúdo no Blog"
+    ])
 
+    # --- ABA 1: GERENCIADOR (CRM) ---
     with aba_gestao:
         st.subheader("Esteira de Atendimento Dinâmica")
         if membros_db.empty:
@@ -285,11 +316,11 @@ else:
                     "Data_Nascimento": st.column_config.DateColumn("Nascimento", disabled=True),
                     "Mensagem": st.column_config.TextColumn("Solicitação", disabled=True, width="medium"),
                     "Responsavel": st.column_config.SelectboxColumn("Responsável", options=[e["nome"] for e in EQUIPE]),
-                    "T1_BoasVindas": st.column_config.SelectboxColumn("T1", options=["Pendente", "Concluído"]),
-                    "T2_AnaliseCredito": st.column_config.SelectboxColumn("T2", options=["Pendente", "Concluído"]),
-                    "T3_GatilhoOferta": st.column_config.SelectboxColumn("T3", options=["Pendente", "Concluído"]),
-                    "T4_MsgWhats": st.column_config.SelectboxColumn("T4", options=["Pendente", "Concluído"]),
-                    "T5_PosVenda": st.column_config.SelectboxColumn("T5", options=["Pendente", "Concluído"]),
+                    "T1": st.column_config.SelectboxColumn("T1", options=["Pendente", "Concluído"]),
+                    "T2": st.column_config.SelectboxColumn("T2", options=["Pendente", "Concluído"]),
+                    "T3": st.column_config.SelectboxColumn("T3", options=["Pendente", "Concluído"]),
+                    "T4": st.column_config.SelectboxColumn("T4", options=["Pendente", "Concluído"]),
+                    "T5": st.column_config.SelectboxColumn("T5", options=["Pendente", "Concluído"]),
                     "Próxima Ação": st.column_config.LinkColumn("💬 WhatsApp", display_text="Chamar")
                 },
                 hide_index=True,
@@ -300,6 +331,7 @@ else:
                 st.success("Alterações gravadas com sucesso!")
                 st.rerun()
 
+    # --- ABA 2: CALENDÁRIO ---
     with aba_calendario:
         st.subheader("📅 Calendário de Relacionamento de Aniversariantes")
         hoje = datetime.date.today()
@@ -325,28 +357,81 @@ else:
                             st.link_button("🎉 Enviar Mensagem", f"https://api.whatsapp.com/send?phone={row['WhatsApp']}&text={urllib.parse.quote(msg_p)}")
                         st.markdown("---")
 
+    # --- ABA 3: DASHBOARD ---
     with aba_analytics:
         st.subheader("Dashboard de Performance Geral")
         if not membros_db.empty:
             st.metric(label="👥 Total de Leads Capturados", value=len(membros_db))
             st.bar_chart(membros_db["Responsavel"].value_counts(), use_container_width=True)
 
+    # --- ABA 4: O EDITOR DE TEXTO RICO (ACÓPLADO VISUALMENTE COMPLETO) ---
     with aba_novo_blog:
-        st.subheader("✍️ Criador de Conteúdo Livre")
-        st.markdown("Cole o seu texto livremente. Se quiser dar formato em partes específicas, use HTML direto no campo:")
-        st.code("Exemplos:\n<b>Texto em Negrito</b>\n<i>Texto em Itálico</i>\n<span style='color: gold;'>Texto Dourado</span>")
+        st.subheader("✍️ Editor de Postagens Profissional (Estilo Blogger)")
+        st.markdown("Monte seu artigo usando a formatação direta abaixo. Diferente da versão anterior, você pode aplicar estilos a frases específicas combinando os blocos de texto.")
         
         b_titulo = st.text_input("Título da Postagem:")
         b_autor = st.text_input("Autor da Publicação:", value="Lucas - Central Brothers")
         b_cat = st.selectbox("Categoria Operacional:", ["Dicas Práticas", "Inteligência Financeira", "Passo a Passo", "Novidades do Hub"])
         b_img = st.text_input("URL da Imagem de Destaque:")
         
-        b_conteudo = st.text_area("Escreva aqui o artigo completo com as tags que desejar:", height=300)
+        st.markdown("---")
+        st.markdown("### 🛠️ Painel de Edição de Texto por Parágrafo")
+        st.write("Escreva o parágrafo abaixo e marque as opções de formatação que deseja aplicar **somente a este bloco**:")
+        
+        col_f1, col_f2, col_f3, col_f4 = st.columns(4)
+        with col_f1:
+            f_bold = st.checkbox("Texto em Negrito (Bold)")
+        with col_f2:
+            f_italic = st.checkbox("Texto em Itálico")
+        with col_f3:
+            f_header = st.checkbox("Transformar em Subtítulo")
+        with col_f4:
+            f_gold = st.checkbox("Texto na Cor Dourada (VIP)")
+            
+        texto_bloco = st.text_area("Escreva o parágrafo ou frase aqui:", height=100, placeholder="Ex: Este texto terá a formatação marcada acima...")
+        
+        # Processa a formatação selecionada de forma limpa e segura
+        if texto_bloco:
+            if f_bold:
+                texto_bloco = f"<b>{texto_bloco}</b>"
+            if f_italic:
+                texto_bloco = f"<i>{texto_bloco}</i>"
+            if f_header:
+                texto_bloco = f"<h3>{texto_bloco}</h3>"
+            if f_gold:
+                texto_bloco = f"<span style='color: #FFD700;'>{texto_bloco}</span>"
+                
+        if "acumulador_html" not in st.session_state:
+            st.session_state.acumulador_html = ""
+            
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            if st.button("➕ Inserir Bloco Formatado no Artigo"):
+                if texto_bloco:
+                    st.session_state.acumulador_html += texto_bloco + "<br><br>"
+                    st.success("Bloco adicionado com sucesso ao documento!")
+                else:
+                    st.error("Escreva um texto antes de inserir.")
+        with col_btn2:
+            if st.button("🗑️ Limpar Rascunho Completo"):
+                st.session_state.acumulador_html = ""
+                st.rerun()
+                
+        st.markdown("---")
+        st.markdown("### 👁️ Caixa de Edição Final do Artigo (Estilo Código/Texto do Blogger)")
+        st.write("Abaixo está o texto consolidado com as formatações aplicadas. Você pode editar diretamente se quiser:")
+        
+        # O rascunho final onde a mágica acontece
+        corpo_final_artigo = st.text_area("Conteúdo Completo (HTML/Rich Text):", value=st.session_state.acumulador_html, height=200)
+        
+        st.markdown("#### 📱 Pré-visualização Real da Postagem:")
+        st.markdown(f"<div style='background-color: #1a1a24; padding: 20px; border-radius: 8px; border: 1px solid #333;'>{corpo_final_artigo}</div>", unsafe_allow_html=True)
         
         if st.button("💥 ENVIAR E PUBLICAR ARTIGO IMEDIATAMENTE", type="primary"):
-            if b_titulo and b_conteudo:
-                salvar_post(b_titulo, b_autor, b_cat, b_conteudo, b_img)
-                st.success("🔥 Artigo publicado com sucesso!")
+            if b_titulo and corpo_final_artigo:
+                salvar_post(b_titulo, b_autor, b_cat, corpo_final_artigo, b_img)
+                st.session_state.acumulador_html = ""
+                st.success("🔥 Artigo publicado com sucesso! Faça logout para ver o botão 'Leia Mais' na Home.")
                 st.rerun()
             else:
-                st.error("Preencha o Título e o Conteúdo.")
+                st.error("Preencha o Título e o Conteúdo antes de publicar.")
