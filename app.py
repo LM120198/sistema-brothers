@@ -104,109 +104,82 @@ def atualizar_status(df_editado):
     conn.commit()
     conn.close()
 
-# --- ARQUIVO CENTRAL DE ESTILO, ANIMAÇÕES E INTERATIVIDADE GLOBAL ---
+# --- ENGINE VISUAL DE COMPOSIÇÃO: EFEITO CONSTRUTOR E VOO DO MASCOTE ---
 st.markdown("""
 <style>
-    /* Força o plano de fundo escuro no Streamlit inteiro */
-    .stApp, body, [data-testid="stAppViewContainer"] { 
-        background-color: #0e0e12 !important; 
-    }
+    .stApp, body { background-color: #0e0e12 !important; }
 
-    /* --- CORTINA DE INTRODUÇÃO ABSOLUTA (FULL SCREEN 100VW) --- */
-    @keyframes recolherCortina {
-        0% { transform: translateY(0); }
-        100% { transform: translateY(-100vh); display: none; visibility: hidden; }
+    /* --- CORTINA DE CARREGAMENTO INICIAL --- */
+    @keyframes fecharCortina {
+        0% { transform: scaleY(1); }
+        100% { transform: scaleY(0); display: none; visibility: hidden; }
     }
     @keyframes neonPulse {
-        0%, 100% { filter: drop-shadow(0 0 10px #FFD700) drop-shadow(0 0 20px #FFD700); transform: scale(1); }
-        50% { filter: drop-shadow(0 0 30px #FFD700) drop-shadow(0 0 50px #FFD700); transform: scale(1.05); }
+        0%, 100% { filter: drop-shadow(0 0 10px #FFD700); transform: scale(1); }
+        50% { filter: drop-shadow(0 0 30px #FFD700); transform: scale(1.05); }
     }
-    @keyframes typingEffect {
+    @keyframes typing {
         from { width: 0; }
         to { width: 100%; }
     }
 
     #cortina-intro {
-        position: fixed !important;
-        top: 0 !important; left: 0 !important;
-        width: 100vw !important; height: 100vh !important;
-        background-color: #050508 !important;
-        z-index: 9999999 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        animation: recolherCortina 0.8s cubic-bezier(0.77, 0, 0.175, 1) forwards !important;
-        animation-delay: 3.8s !important;
-        pointer-events: none !important;
+        position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh;
+        background-color: #050507 !important; z-index: 9999999 !important;
+        display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;
+        animation: fecharCortina 0.6s cubic-bezier(0.77, 0, 0.175, 1) forwards !important;
+        animation-delay: 3.8s !important; transform-origin: top; pointer-events: none !important;
     }
-
-    .aguia-gigante {
-        font-size: 8rem !important;
-        animation: neonPulse 2s ease-in-out infinite !important;
-        margin-bottom: 20px !important;
-        user-select: none !important;
-    }
-
+    .aguia-gigante { font-size: 8rem !important; animation: neonPulse 2s ease-in-out infinite !important; margin-bottom: 20px !important; }
     .texto-datilografado {
-        color: #FFD700 !important;
-        font-size: 2.2rem !important;
-        font-weight: 900 !important;
-        letter-spacing: 5px !important;
-        overflow: hidden !important;
-        white-space: nowrap !important;
-        border-right: 3px solid #FFD700 !important;
-        width: 0;
-        animation: typingEffect 2.2s steps(30, end) forwards !important;
-        animation-delay: 0.5s !important;
-        text-align: center !important;
+        color: #FFD700 !important; font-size: 2.2rem !important; font-weight: 900 !important; letter-spacing: 5px !important;
+        overflow: hidden !important; white-space: nowrap !important; border-right: 3px solid #FFD700 !important; width: 0;
+        animation: typing 2s steps(30, end) forwards !important; animation-delay: 0.5s !important; text-align: center !important;
     }
 
-    /* --- ENGENHARIA REFEITA DO EAGLEBOT FLUTUANTE (ANTI-OCULTAÇÃO) --- */
+    /* --- ANIMAÇÃO DE CONSTRUÇÃO DO SITE PASSO A PASSO --- */
+    @keyframes carregarModulo {
+        0% { opacity: 0; transform: translateY(30px) scale(0.98); filter: blur(4px); }
+        100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+
+    /* Cada coluna e bloco principal vai carregar em tempos diferentes imitando uma montagem técnica */
+    div[data-testid="stColumn"]:nth-child(1) { animation: carregarModulo 0.8s cubic-bezier(0.25, 1, 0.5, 1) both; animation-delay: 4.1s; }
+    div[data-testid="stColumn"]:nth-child(2) { animation: carregarModulo 0.8s cubic-bezier(0.25, 1, 0.5, 1) both; animation-delay: 4.4s; }
+    .stImage { animation: carregarModulo 1s cubic-bezier(0.25, 1, 0.5, 1) both; animation-delay: 3.9s; }
+
+    /* --- ENGENHARIA DO EAGLEBOT COM VOO RASANTE INTELIGENTE --- */
+    @keyframes vooRasante {
+        0% { right: 30px; bottom: 30px; transform: scale(1); }
+        15% { right: 50vw; bottom: 80vh; transform: scale(1.6) rotate(-10deg); filter: drop-shadow(0 0 15px #FFD700); }
+        30% { right: 85vw; bottom: 40vh; transform: scale(1.3) rotate(10deg); }
+        45% { right: 10vw; bottom: 60vh; transform: scale(1.5) rotate(-5deg); }
+        60% { right: 50vw; bottom: 20vh; transform: scale(1.4) rotate(0); }
+        75% { right: 30px; bottom: 30px; transform: scale(1); }
+    }
+    
     .eagle-widget-fixed {
-        position: fixed !important;
-        bottom: 30px !important;
-        right: 30px !important;
-        z-index: 9999998 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
+        position: fixed !important; bottom: 30px !important; right: 30px !important;
+        z-index: 9999998 !important; display: flex !important; flex-direction: column !important; align-items: center !important;
         pointer-events: auto !important;
     }
-    .widget-bubble-live {
-        background: #161622 !important;
-        border: 2px solid #FFD700 !important;
-        border-radius: 12px !important;
-        padding: 12px !important;
-        color: #fff !important;
-        font-size: 13px !important;
-        text-align: center !important;
-        width: 220px !important;
-        margin-bottom: 15px !important;
-        box-shadow: 0px 8px 24px rgba(0,0,0,0.8) !important;
-        transition: all 0.3s ease !important;
-    }
+    
+    /* Dispara o voo automático completo a cada 20 segundos de forma cíclica */
     .eagle-avatar-live {
-        font-size: 4rem !important;
-        user-select: none !important;
-        cursor: pointer !important;
-        animation: smoothFloat 2.5s ease-in-out infinite !important;
+        font-size: 4rem !important; user-select: none !important; cursor: pointer !important;
+        position: fixed !important; bottom: 30px; right: 30px;
+        animation: vooRasante 12s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite !important;
+        animation-delay: 8s !important;
     }
-    @keyframes smoothFloat {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-12px); }
-    }
-    .eagle-widget-fixed:hover .widget-bubble-live {
-        background: #FFD700 !important;
-        color: #000 !important;
-        transform: scale(1.03);
-    }
-    .eagle-widget-fixed:hover .eagle-avatar-live {
-        transform: scale(1.15);
+
+    .widget-bubble-live {
+        background: #161622 !important; border: 2px solid #FFD700 !important; border-radius: 12px !important;
+        padding: 12px !important; color: #fff !important; font-size: 13px !important; text-align: center !important;
+        width: 220px !important; margin-bottom: 85px !important; box-shadow: 0px 8px 24px rgba(0,0,0,0.8) !important;
     }
 </style>
 
-<!-- Injeção da Cortina Teatral de Abertura -->
+<!-- Inicialização da Cortina Full Screen -->
 <div id="cortina-intro">
     <div class="aguia-gigante">🦅</div>
     <div class="texto-datilografado">BROTHERS NETWORK FINANCE</div>
@@ -238,15 +211,14 @@ membros_db = carregar_dados()
 blog_db = carregar_posts()
 
 # =========================================================================
-# 🌐 VISÃO PÚBLICA (PORTAL PREMIUM TOTALMENTE INTERATIVO)
+# 🌐 VISÃO PÚBLICA (PORTAL PREMIUM TOTALMENTE ANIMADO E INTERATIVO)
 # =========================================================================
 if not st.session_state.autenticado:
     
-    # Renderização Forçada do Mascote EagleBot no Canto Direito
     st.markdown("""
     <div class="eagle-widget-fixed">
         <div class="widget-bubble-live">
-            🦅 <b>EagleBot:</b> Estou ativo! Passe o mouse em mim para ver as novidades e dicas de score.
+            🦅 <b>EagleBot:</b> Módulos carregados! Monitore o painel de score ao lado.
         </div>
         <div class="eagle-avatar-live">🦅</div>
     </div>
