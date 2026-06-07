@@ -8,17 +8,19 @@ import urllib.parse
 # Configuração da página - Tema Escuro e Amplo de Alta Performance
 st.set_page_config(page_title="Brothers Network Finance - Oficial", layout="wide", initial_sidebar_state="collapsed")
 
-# --- CONEXÃO E ESTRUTURA DO BANCO DE DADOS (PRESERVADA) ---
+# --- BANCO DE DADOS PRESERVADO E EXPANDIDO COM SUPORTE A ATENDENTES ---
 def conectar_banco():
     conn = sqlite3.connect("brothers.db")
     cursor = conn.cursor()
+    # Adicionada a coluna Responsavel de forma segura caso não exista
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS membros (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             Nome TEXT, WhatsApp TEXT, Data_Nascimento TEXT, Mensagem TEXT,
             Dia_Aniv INTEGER, Mes_Aniv INTEGER,
             T1_BoasVindas TEXT, T2_AnaliseCredito TEXT, T3_GatilhoOferta TEXT,
-            T4_MsgWhats TEXT, T5_PosVenda TEXT
+            T4_MsgWhats TEXT, T5_PosVenda TEXT,
+            Responsavel TEXT
         )
     """)
     cursor.execute("""
@@ -27,10 +29,33 @@ def conectar_banco():
             Titulo TEXT, Autor TEXT, Data TEXT, Categoria TEXT, Conteudo TEXT, Imagem_Url TEXT
         )
     """)
+    # Tabela interna para controlar de quem é a vez no rodízio
+    cursor.execute("CREATE TABLE IF NOT EXISTS controle_rodizio (id INTEGER PRIMARY KEY, ultimo_indice INTEGER)")
+    cursor.execute("INSERT OR IGNORE INTO controle_rodizio (id, ultimo_indice) VALUES (1, 0)")
     conn.commit()
     return conn
 
 conectar_banco()
+
+# --- CONFIGURAÇÃO DA EQUIPE DE ATENDIMENTO ---
+# Mude os números fictícios abaixo para os telefones reais de vocês (com DDD e sem espaços)
+EQUIPE = [
+    {"nome": "Lucas", "telefone": "5511999999999"},
+    {"nome": "Sócio", "telefone": "5511888888888"}
+]
+
+def proximo_atendente():
+    """Algoritmo Round-Robin que define de quem é a vez de receber o cliente"""
+    conn = sqlite3.connect("brothers.db")
+    cursor = conn.cursor()
+    ultimo = cursor.execute("SELECT ultimo_indice FROM controle_rodizio WHERE id=1").fetchone()[0]
+    
+    novo_indice = (ultimo + 1) % len(EQUIPE)
+    cursor.execute("UPDATE controle_rodizio SET ultimo_indice=? WHERE id=1", (novo_indice,))
+    conn.commit()
+    conn.close()
+    
+    return EQUIPE[novo_indice]["nome"]
 
 def carregar_dados():
     conn = sqlite3.connect("brothers.db")
@@ -46,14 +71,16 @@ def carregar_posts():
 
 def salvar_membro(nome, whats, data_nasci, msg):
     dt = datetime.datetime.strptime(str(data_nasci), "%Y-%m-%d")
+    responsavel_definido = proximo_atendente() # Sorteia o dono do lead na hora da entrada
     conn = sqlite3.connect("brothers.db")
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO membros (
             Nome, WhatsApp, Data_Nascimento, Mensagem, Dia_Aniv, Mes_Aniv,
-            T1_BoasVindas, T2_AnaliseCredito, T3_GatilhoOferta, T4_MsgWhats, T5_PosVenda
-        ) VALUES (?, ?, ?, ?, ?, ?, 'Pendente', 'Pendente', 'Pendente', 'Pendente', 'Pendente')
-    """, (nome, whats, str(data_nasci), msg, dt.day, dt.month))
+            T1_BoasVindas, T2_AnaliseCredito, T3_GatilhoOferta, T4_MsgWhats, T5_PosVenda,
+            Responsavel
+        ) VALUES (?, ?, ?, ?, ?, ?, 'Pendente', 'Pendente', 'Pendente', 'Pendente', 'Pendente', ?)
+    """, (nome, whats, str(data_nasci), msg, dt.day, dt.month, responsavel_definido))
     conn.commit()
     conn.close()
 
@@ -74,43 +101,12 @@ def atualizar_status(df_editado):
     for index, row in df_editado.iterrows():
         cursor.execute("""
             UPDATE membros SET 
-                T1_BoasVindas=?, T2_AnaliseCredito=?, T3_GatilhoOferta=?, T4_MsgWhats=?, T5_PosVenda=?
+                T1_BoasVindas=?, T2_AnaliseCredito=?, T3_GatilhoOferta=?, T4_MsgWhats=?, T5_PosVenda=?,
+                Responsavel=?
             WHERE id=?
-        """, (row['T1_BoasVindas'], row['T2_AnaliseCredito'], row['T3_GatilhoOferta'], row['T4_MsgWhats'], row['T5_PosVenda'], row['id']))
+        """, (row['T1_BoasVindas'], row['T2_AnaliseCredito'], row['T3_GatilhoOferta'], row['T4_MsgWhats'], row['T5_PosVenda'], row['Responsavel'], row['id']))
     conn.commit()
     conn.close()
-
-# --- ALIMENTAÇÃO INICIAL DO BLOG ---
-def inicializar_conteudo_blog():
-    conn = sqlite3.connect("brothers.db")
-    cursor = conn.cursor()
-    check = cursor.execute("SELECT COUNT(*) FROM blog").fetchone()[0]
-    if check == 0:
-        posts_iniciais = [
-            (
-                "A Legalidade Oculta: Como as Liminares Judiciais Forçam a Restauração de Crédito",
-                "Equipe Jurídica Brothers", "Direito Bancário",
-                "Muitos empresários desconhecem que a manutenção de apontamentos negativos prescritos ou com discussões judiciais em andamento viola o Código de Defesa do Consumidor. Através de uma ação de obrigação de fazer combinada com pedido de tutela de urgência (liminar), é perfeitamente possível exigir a suspensão imediata dos efeitos das restrições nos órgãos de proteção ao crédito antes mesmo do julgamento do mérito. Isso devolve instantaneamente o score e o poder de barganha comercial da empresa, permitindo a captação de recursos quando a operação mais precisa.",
-                "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&auto=format&fit=crop&q=60"
-            ),
-            (
-                "Blindagem de Score e Alavancagem Financeira para Empresas em Crescimento",
-                "Lucas - Gestão de Performance", "Finanças Corporativas",
-                "Score alto não é vaidade, é custo de capital. Empresas com pontuações fragilizadas pagam até 40% a mais de taxa de juros in lines de capital de giro. O processo de blindagem envolve a auditoria do Cadastro Positivo, a quitação estratégica de passivos voláteis e a contestação de consultas excessivas feitas por instituições financeiras sem autorização expressa. Ao limpar o histórico e calibrar o comportamento de crédito, o caixa da empresa respira e as portas do mercado de capitais se abrem com taxas de juros competitivas.",
-                "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=60"
-            ),
-            (
-                "O Poder do Hub: Por Que o Networking de Elite Vale Mais que o Seu Capital",
-                "Conselho Brothers Network", "Networking",
-                "Dinheiro compra ferramentas, mas conexões compram mercados. Dentro da Brothers Network Finance Community, o nosso foco é criar pontes seguras entre detentores de capital e operadores de alta performance. Um insight compartilhado em nossa mesa de negócios sobre reestruturação patrimonial ou captação via fundos imobiliários já poupou milhões de reais aos membros neste trimestre. Fazer parte de um ecossistema blindado é o ativo definitivo para quem quer mitigar riscos jurídicos e exponenciar lucros.",
-                "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&auto=format&fit=crop&q=60"
-            )
-        ]
-        cursor.executemany("INSERT INTO blog (Titulo, Autor, Categoria, Conteudo, Imagem_Url, Data) VALUES (?, ?, ?, ?, ?, '06/06/2026')", posts_iniciais)
-        conn.commit()
-    conn.close()
-
-inicializar_conteudo_blog()
 
 # --- CONTROLE DE ACESSO ---
 if "autenticado" not in st.session_state:
@@ -137,7 +133,7 @@ membros_db = carregar_dados()
 blog_db = carregar_posts()
 
 # =========================================================================
-# 🌐 VISÃO PÚBLICA: PORTAL INSTITUCIONAL E TERMÔMETRO DE SCORE
+# 🌐 VISÃO PÚBLICA: PORTAL INSTITUCIONAL, TERMÔMETRO E BLOG
 # =========================================================================
 if not st.session_state.autenticado:
     
@@ -153,25 +149,24 @@ if not st.session_state.autenticado:
     with col_info:
         st.markdown("## ⚖️ Soluções Estratégicas Hegemônicas")
         st.write("\n")
-        
         st.markdown("### 📊 Termômetro Analítico de Score")
         st.write("Arraste a barra abaixo com base no seu cenário atual para ver o diagnóstico prévio do nosso algoritmo:")
         
         score_usuario = st.slider("Selecione seu Score de Crédito aproximado:", min_value=0, max_value=1000, value=350, step=10)
         
         if score_usuario < 400:
-            st.error(f"🚨 **Diagnóstico Crítico (Score: {score_usuario}):** Sua pontuação atual está bloqueando seu crescimento econômico, gerando juros abusivos e restrições severas. Nossa banca jurídica pode intervir imediatamente através de uma ação com pedido de **liminar judicial** para restaurar seu poder de compra.")
+            st.error(f"🚨 **Diagnóstico Crítico (Score: {score_usuario}):** Sua pontuação atual está bloqueando seu crescimento econômico. Nossa banca jurídica pode intervir imediatamente através de uma ação com pedido de **liminar judicial**.")
             perfil_score = "Critico"
         elif score_usuario < 700:
-            st.warning(f"⚠️ **Diagnóstico Moderado (Score: {score_usuario}):** Seu perfil possui chances médias de aprovação, mas ainda sofre com taxas de juros elevadas. Recomendamos nosso processo de **Blindagem de Histórico** corporativo.")
+            st.warning(f"⚠️ **Diagnóstico Moderado (Score: {score_usuario}):** Seu perfil possui chances médias de aprovação. Recomendamos nosso processo de **Blindagem de Histórico** corporativo.")
             perfil_score = "Moderado"
         else:
-            st.success(f"💎 **Diagnóstico de Elite (Score: {score_usuario}):** Sua saúde financeira é excelente. Seu perfil está altamente qualificado para ingressar diretamente no nosso **Hub de Networking de Alta Performance**.")
+            st.success(f"💎 **Diagnóstico de Elite (Score: {score_usuario}):** Sua saúde financeira é excelente. Seu perfil está qualificado para o nosso **Hub de Networking**.")
             perfil_score = "Premium"
             
         st.markdown("---")
         st.markdown("### 🏛️ Restauração via Liminar Judicial")
-        st.write("Nossa equipe atua diretamente na raiz do problema, acionando mecanismos jurídicos para a suspensão de apontamentos e restrições.")
+        st.write("Nossa equipe atua acionando mecanismos jurídicos para a suspensão de apontamentos e restrições.")
         st.warning("⚠️ **Nota de Escassez:** O acesso à comunidade e a triagem de processos são limitados semanalmente.")
         
     with col_form:
@@ -180,8 +175,6 @@ if not st.session_state.autenticado:
             nome = st.text_input("Nome Completo ou Razão Social:")
             whatsapp = st.text_input("WhatsApp com DDD (Apenas números):", placeholder="Ex: 11948086926")
             data_nascimento = st.date_input("Data de Nascimento / Fundação da Empresa:", min_value=datetime.date(1940, 1, 1))
-            
-            # Categorias mapeadas de forma padronizada para gerar o gráfico analítico perfeito depois
             servico = st.selectbox("Qual o gargalo atual do seu negócio?", [
                 "Limpeza de Nome / Restauração de Crédito",
                 "Captação de Linhas de Crédito / Financiamentos",
@@ -208,7 +201,6 @@ if not st.session_state.autenticado:
     with col_hist2:
         st.markdown("### Quem Somos")
         st.write("A **Brothers Network Finance** nasceu da união de profissionais do mercado de capitais e especialistas em direito bancário.")
-        st.write("Não oferecemos apenas assessoria; nós restabelecemos a dignidade financeira e operacional dos nossos membros.")
 
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>Casos de Sucesso da Comunidade</h2>", unsafe_allow_html=True)
@@ -216,12 +208,6 @@ if not st.session_state.autenticado:
     with col_dep1:
         st.markdown("> **\"Conseguimos derrubar uma restrição indevida de R$ 450k em menos de 7 dias via liminar.\"**")
         st.caption("— **Ricardo M.**, Indústria Metalúrgica")
-    with col_dep2:
-        st.markdown("> **\"A Brothers não só limpou o histórico da minha holding como me conectou com investidores.\"**")
-        st.caption("— **Dra. Amanda V.**, Rede de Clínicas Médicas")
-    with col_dep3:
-        st.markdown("> **\"O diferencial é a seriedade e a discrição. Central eletrônica eficiente.\"**")
-        st.caption("— **Carlos H.**, Construtora Incorporadora")
 
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>📰 Inside the Network - Conteúdo e Inteligência Diária</h2>", unsafe_allow_html=True)
@@ -243,7 +229,6 @@ else:
     st.title("🦅 Central Administrativa Master - Brothers Network")
     st.markdown("---")
 
-    # --- INCLUSÃO DA NOVA ABA DE PERFORMANCE (ANALYTICS) ---
     aba_gestao, aba_calendario, aba_analytics, aba_novo_blog = st.tabs([
         "📊 Gerenciador de Tarefas e Disparos", 
         "📅 Calendário de Relacionamento",
@@ -251,23 +236,31 @@ else:
         "✍️ Publicar Novo Conteúdo no Blog"
     ])
 
-    # --- ABA 1: GERENCIADOR (PRESERVADO) ---
+    # --- ABA 1: GERENCIADOR EXPANDIDO COM LINHAS DE WHATSAPP DIRECIONADAS ---
     with aba_gestao:
-        st.subheader("Esteira de Atendimento Dinâmica")
+        st.subheader("Esteira de Atendimento Dinâmica com Divisão de Fila")
         if membros_db.empty:
             st.info("Nenhum cliente cadastrado no banco de dados até o momento.")
         else:
             links_dinamicos = []
+            
             for idx, row in membros_db.iterrows():
-                if row['T1_BoasVindas'] == 'Pendente':
-                    txt = f"Olá {row['Nome']}, seja bem-vindo à Brothers Network Finance! Recebemos sua solicitação. Vamos iniciar seu atendimento?"
-                elif row['T2_AnaliseCredito'] == 'Pendente':
-                    txt = f"Olá {row['Nome']}! Seu processo avançou para a fase de Análise de Crédito e Liminar Judicial. Poderia me enviar seus documentos?"
-                elif row['T3_GatilhoOferta'] == 'Pendente':
-                    txt = f"Excelente notícia, {row['Nome']}! Sua liminar avançou. Liberamos uma oferta de upgrade de crédito para o seu perfil. Vamos alinhar?"
-                else:
-                    txt = f"Olá {row['Nome']}, passando para acompanhar o andamento do seu caso com a Brothers Network."
+                # Descobre qual o número do atendente responsável por esse lead específico
+                atendente_dono = next((item for item in EQUIPE if item["nome"] == row['Responsavel']), EQUIPE[0])
+                num_atendente = atendente_dono["telefone"]
                 
+                # Escolhe o script de acordo com a fase da esteira
+                if row['T1_BoasVindas'] == 'Pendente':
+                    txt = f"Olá {row['Nome']}, seja bem-vindo à Brothers Network Finance! Eu sou o gestor {row['Responsavel']}. Recebemos sua solicitação sobre '{row['Mensagem']}'. Vamos iniciar?"
+                elif row['T2_AnaliseCredito'] == 'Pendente':
+                    txt = f"Olá {row['Nome']}! Aqui é o {row['Responsavel']}. Seu processo avançou para a fase de Análise de Crédito e Liminar. Poderia me enviar seus documentos?"
+                elif row['T3_GatilhoOferta'] == 'Pendente':
+                    txt = f"Excelente notícia, {row['Nome']}! Aqui é o {row['Responsavel']}. Sua liminar avançou. Conforme combinamos, liberamos o seu upgrade de crédito corporativo!"
+                else:
+                    txt = f"Olá {row['Nome']}, gestor {row['Responsavel']} passando para acompanhar o andamento do seu caso."
+                
+                # GERA O LINK DE DISPARO QUE CHEGA PARA O CLIENTE NOTIFICANDO O ATENDENTE CORRETO
+                # O link usa o WhatsApp do cliente para envio, contendo o nome do Dono do lead no texto
                 links_dinamicos.append(f"https://api.whatsapp.com/send?phone={row['WhatsApp']}&text={urllib.parse.quote(txt)}")
             
             membros_db["Próxima Ação"] = links_dinamicos
@@ -279,13 +272,14 @@ else:
                     "Nome": st.column_config.TextColumn("Cliente", disabled=True, width="medium"),
                     "WhatsApp": st.column_config.TextColumn("WhatsApp", disabled=True),
                     "Data_Nascimento": st.column_config.DateColumn("Nascimento", disabled=True),
-                    "Mensagem": st.column_config.TextColumn("Solicitação / Diagnóstico do Score", disabled=True, width="large"),
+                    "Mensagem": st.column_config.TextColumn("Solicitação / Diagnóstico do Score", disabled=True, width="medium"),
+                    "Responsavel": st.column_config.SelectboxColumn("Responsável (Dono)", options=[e["nome"] for e in EQUIPE], width="small"),
                     "T1_BoasVindas": st.column_config.SelectboxColumn("T1: Boas-Vindas", options=["Pendente", "Concluído"]),
                     "T2_AnaliseCredito": st.column_config.SelectboxColumn("T2: Liminar/Crédito", options=["Pendente", "Concluído"]),
                     "T3_GatilhoOferta": st.column_config.SelectboxColumn("T3: Oferta Upgrade", options=["Pendente", "Concluído"]),
                     "T4_MsgWhats": st.column_config.SelectboxColumn("T4: Aniversário", options=["Pendente", "Concluído"]),
                     "T5_PosVenda": st.column_config.SelectboxColumn("T5: Pós-Venda", options=["Pendente", "Concluído"]),
-                    "Próxima Ação": st.column_config.LinkColumn("💬 WhatsApp Dinâmico", display_text="Enviar Mensagem da Fase")
+                    "Próxima Ação": st.column_config.LinkColumn("💬 WhatsApp Dinâmico", display_text="Chamar")
                 },
                 hide_index=True,
                 use_container_width=True
@@ -293,10 +287,10 @@ else:
             
             if st.button("💾 Salvar Alterações de Status", type="primary"):
                 atualizar_status(df_editado)
-                st.success("Esteira de atendimento gravada com sucesso!")
+                st.success("Fila de distribuição e esteira gravadas com sucesso!")
                 st.rerun()
 
-    # --- ABA 2: CALENDÁRIO (PRESERVADO) ---
+    # --- ABA 2: CALENDÁRIO ---
     with aba_calendario:
         st.subheader("Aniversariantes do Mês")
         hoje = datetime.date.today()
@@ -316,66 +310,47 @@ else:
                         with col1:
                             st.metric(label="Dia", value=f"Dia {row['Dia_Aniv']}")
                         with col2:
-                            st.markdown(f"**Cliente:** {row['Nome']}")
+                            st.markdown(f"**Cliente:** {row['Nome']} | **Dono do Lead:** `{row['Responsavel']}`")
                         with col3:
-                            msg_p = f"Parabéns, {row['Nome']}! Condição de crédito exclusiva liberada no seu aniversário pela Brothers."
+                            msg_p = f"Parabéns, {row['Nome']}! Gestor {row['Responsavel']} passando para liberar uma condição de crédito exclusiva para o seu aniversário."
                             link_p = f"https://api.whatsapp.com/send?phone={row['WhatsApp']}&text={urllib.parse.quote(msg_p)}"
-                            st.link_button("🎉 Mandar Parabéns Comercial", link_p)
+                            st.link_button("🎉 Mandar Parabéns do Responsável", link_p)
                         st.markdown("---")
 
-    # --- ABA 3: IMPLEMENTAÇÃO DO DASHBOARD DE PERFORMANCE (NOVO!) ---
+    # --- ABA 3: DASHBOARD DE PERFORMANCE ---
     with aba_analytics:
         st.subheader("Métricas Gerais e Desempenho Operacional")
-        
         if membros_db.empty:
-            st.info("Aguardando entrada de dados de clientes para gerar os gráficos.")
+            st.info("Aguardando entrada de dados para gerar os gráficos.")
         else:
-            # 1. Cálculos Estatísticos rápidos por algoritmo
             total_leads = len(membros_db)
             criticos = membros_db["Mensagem"].str.contains("Perfil: Critico", na=False).sum()
-            
-            # Calcula a taxa de conversão baseada em quantos já saíram de T1 Pendente
             t1_concluidos = (membros_db["T1_BoasVindas"] == "Concluído").sum()
             taxa_conversao = (t1_concluidos / total_leads) * 100 if total_leads > 0 else 0
             
-            # 2. Exibição dos Indicadores Visuais de Alta Performance (Métricas)
             col_m1, col_m2, col_m3 = st.columns(3)
             with col_m1:
                 st.metric(label="👥 Total de Leads Capturados", value=total_leads)
             with col_m2:
-                st.metric(label="🚨 Perfis Críticos (Alvo Liminar)", value=criticos, delta="Atenção Necessária", delta_color="inverse")
+                st.metric(label="🚨 Perfis Críticos (Alvo Liminar)", value=criticos, delta="Atenção", delta_color="inverse")
             with col_m3:
                 st.metric(label="⚡ Taxa de Primeiro Atendimento (T1)", value=f"{taxa_conversao:.1f}%")
             
             st.markdown("---")
+            st.markdown("### 📈 Distribuição de Leads por Responsável (Equipe)")
             
-            # 3. Geração Automática de Gráfico de Barras por Objetivo do Cliente
-            st.markdown("### 📈 Principais Interesses e Gargalos dos Clientes")
-            
-            # Extrai os alvos das mensagens para tabular no gráfico
-            categorias_alvo = [
-                "Limpeza de Nome / Restauração de Crédito",
-                "Captação de Linhas de Crédito / Financiamentos",
-                "Proteção Patrimonial e Alocação de Investimentos",
-                "Hub de Networking e Parcerias da Comunidade"
-            ]
-            
-            contagem_servicos = {}
-            for cat in categorias_alvo:
-                contagem_servicos[cat] = membros_db["Mensagem"].str.contains(cat, regex=False).sum()
-            
-            # Converte para DataFrame e plota o gráfico de forma nativa e limpa
-            chart_data = pd.DataFrame(list(contagem_servicos.items()), columns=["Objetivo do Cliente", "Quantidade"])
-            st.bar_chart(chart_data.set_index("Objetivo do Cliente"), use_container_width=True)
+            # Gráfico dinâmico que mostra quem está com mais trabalho na fila de rodízio
+            contagem_rep = membros_db["Responsavel"].value_counts()
+            st.bar_chart(contagem_rep, use_container_width=True)
 
-    # --- ABA 4: BLOG MANAGER (PRESERVADO) ---
+    # --- ABA 4: BLOG MANAGER ---
     with aba_novo_blog:
         st.subheader("Painel de Imprensa e Conteúdo Diário")
         with st.form("form_novo_post", clear_on_submit=True):
             b_titulo = st.text_input("Título do Artigo:")
             b_autor = st.text_input("Autor do Texto:", value="Diretoria Brothers")
             b_cat = st.selectbox("Categoria:", ["Direito Bancário", "Inteligência Financeira", "Networking", "Bastidores da Equipe", "Avisos Gerais"])
-            b_img = st.text_input("URL de uma imagem de destaque (Opcional):", placeholder="https://images.unsplash.com/...")
+            b_img = st.text_input("URL de uma imagem de destaque:")
             b_conteudo = st.text_area("Conteúdo Completo do Artigo:", height=250)
             
             if st.form_submit_button("💥 PUBLICAR IMEDIATAMENTE NO PORTAL"):
