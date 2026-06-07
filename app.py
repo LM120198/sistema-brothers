@@ -104,19 +104,19 @@ def atualizar_status(df_editado):
     conn.commit()
     conn.close()
 
-# --- ENGINE VISUAL DE COMPOSIÇÃO: EFEITO CONSTRUTOR E VOO DO MASCOTE ---
+# --- ENGINE VISUAL DE ESTILOS E CORTINA DE CARREGAMENTO ---
 st.markdown("""
 <style>
-    .stApp, body { background-color: #0e0e12 !important; }
+    .stApp { background-color: #0e0e12; }
 
-    /* --- CORTINA DE CARREGAMENTO INICIAL --- */
+    /* --- CORTINA DE CARREGAMENTO INICIAL MASTER --- */
     @keyframes fecharCortina {
         0% { transform: scaleY(1); }
         100% { transform: scaleY(0); display: none; visibility: hidden; }
     }
     @keyframes neonPulse {
         0%, 100% { filter: drop-shadow(0 0 10px #FFD700); transform: scale(1); }
-        50% { filter: drop-shadow(0 0 30px #FFD700); transform: scale(1.05); }
+        50% { filter: drop-shadow(0 0 30px #FFD700); transform: scale(1.03); }
     }
     @keyframes typing {
         from { width: 0; }
@@ -128,54 +128,36 @@ st.markdown("""
         background-color: #050507 !important; z-index: 9999999 !important;
         display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;
         animation: fecharCortina 0.6s cubic-bezier(0.77, 0, 0.175, 1) forwards !important;
-        animation-delay: 3.8s !important; transform-origin: top; pointer-events: none !important;
+        animation-delay: 3.5s !important; transform-origin: top; pointer-events: none !important;
     }
     .aguia-gigante { font-size: 8rem !important; animation: neonPulse 2s ease-in-out infinite !important; margin-bottom: 20px !important; }
     .texto-datilografado {
         color: #FFD700 !important; font-size: 2.2rem !important; font-weight: 900 !important; letter-spacing: 5px !important;
         overflow: hidden !important; white-space: nowrap !important; border-right: 3px solid #FFD700 !important; width: 0;
-        animation: typing 2s steps(30, end) forwards !important; animation-delay: 0.5s !important; text-align: center !important;
+        animation: typing 1.8s steps(30, end) forwards !important; animation-delay: 0.5s !important; text-align: center !important;
     }
 
-    /* --- ANIMAÇÃO DE CONSTRUÇÃO DO SITE PASSO A PASSO --- */
-    @keyframes carregarModulo {
-        0% { opacity: 0; transform: translateY(30px) scale(0.98); filter: blur(4px); }
-        100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-    }
-
-    /* Cada coluna e bloco principal vai carregar em tempos diferentes imitando uma montagem técnica */
-    div[data-testid="stColumn"]:nth-child(1) { animation: carregarModulo 0.8s cubic-bezier(0.25, 1, 0.5, 1) both; animation-delay: 4.1s; }
-    div[data-testid="stColumn"]:nth-child(2) { animation: carregarModulo 0.8s cubic-bezier(0.25, 1, 0.5, 1) both; animation-delay: 4.4s; }
-    .stImage { animation: carregarModulo 1s cubic-bezier(0.25, 1, 0.5, 1) both; animation-delay: 3.9s; }
-
-    /* --- ENGENHARIA DO EAGLEBOT COM VOO RASANTE INTELIGENTE --- */
-    @keyframes vooRasante {
-        0% { right: 30px; bottom: 30px; transform: scale(1); }
-        15% { right: 50vw; bottom: 80vh; transform: scale(1.6) rotate(-10deg); filter: drop-shadow(0 0 15px #FFD700); }
-        30% { right: 85vw; bottom: 40vh; transform: scale(1.3) rotate(10deg); }
-        45% { right: 10vw; bottom: 60vh; transform: scale(1.5) rotate(-5deg); }
-        60% { right: 50vw; bottom: 20vh; transform: scale(1.4) rotate(0); }
-        75% { right: 30px; bottom: 30px; transform: scale(1); }
-    }
-    
-    .eagle-widget-fixed {
+    /* --- ESTILIZAÇÃO DO MASCOTE FIXADO NO CANTO (SEM VOO) --- */
+    .eagle-avatar-container {
         position: fixed !important; bottom: 30px !important; right: 30px !important;
-        z-index: 9999998 !important; display: flex !important; flex-direction: column !important; align-items: center !important;
-        pointer-events: auto !important;
+        z-index: 999998 !important; text-align: center; cursor: pointer;
+    }
+    .eagle-avatar-button {
+        font-size: 3.8rem !important; user-select: none !important;
+        animation: smoothBreathe 3s ease-in-out infinite !important;
+        transition: transform 0.3s ease;
+    }
+    .eagle-avatar-button:hover { transform: scale(1.1); }
+    @keyframes smoothBreathe {
+        0%, 100% { transform: translateY(0px); filter: drop-shadow(0 0 5px rgba(255,215,0,0.3)); }
+        50% { transform: translateY(-8px); filter: drop-shadow(0 0 15px rgba(255,215,0,0.6)); }
     }
     
-    /* Dispara o voo automático completo a cada 20 segundos de forma cíclica */
-    .eagle-avatar-live {
-        font-size: 4rem !important; user-select: none !important; cursor: pointer !important;
-        position: fixed !important; bottom: 30px; right: 30px;
-        animation: vooRasante 12s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite !important;
-        animation-delay: 8s !important;
-    }
-
-    .widget-bubble-live {
+    .widget-bubble-info {
         background: #161622 !important; border: 2px solid #FFD700 !important; border-radius: 12px !important;
-        padding: 12px !important; color: #fff !important; font-size: 13px !important; text-align: center !important;
-        width: 220px !important; margin-bottom: 85px !important; box-shadow: 0px 8px 24px rgba(0,0,0,0.8) !important;
+        padding: 8px 12px !important; color: #fff !important; font-size: 11px !important; width: 160px;
+        position: fixed !important; bottom: 105px !important; right: 30px !important; z-index: 999998 !important;
+        box-shadow: 0px 8px 24px rgba(0,0,0,0.5) !important; text-align: center;
     }
 </style>
 
@@ -211,17 +193,14 @@ membros_db = carregar_dados()
 blog_db = carregar_posts()
 
 # =========================================================================
-# 🌐 VISÃO PÚBLICA (PORTAL PREMIUM TOTALMENTE ANIMADO E INTERATIVO)
+# 🌐 VISÃO PÚBLICA (PORTAL PREMIUM TOTALMENTE INTERATIVO)
 # =========================================================================
 if not st.session_state.autenticado:
     
+    # Renderização Estável e Fixa da Águia no Canto da Tela
     st.markdown("""
-    <div class="eagle-widget-fixed">
-        <div class="widget-bubble-live">
-            🦅 <b>EagleBot:</b> Módulos carregados! Monitore o painel de score ao lado.
-        </div>
-        <div class="eagle-avatar-live">🦅</div>
-    </div>
+    <div class="widget-bubble-info">💬 Clique em mim para tirar suas dúvidas!</div>
+    <div class="eagle-avatar-container"><div class="eagle-avatar-button">🦅</div></div>
     """, unsafe_allow_html=True)
     
     st.markdown("<h1 style='color: #FFD700; font-size: 3.5rem; font-weight: 800; text-align:center;'>BROTHERS NETWORK FINANCE</h1>", unsafe_allow_html=True)
@@ -274,7 +253,7 @@ if not st.session_state.autenticado:
                 else:
                     st.error("Nome e WhatsApp são obrigatórios.")
 
-    # HISTÓRIA E EQUIPE
+    # HISTÓRIA, EQUIPE E DEPOIMENTOS
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>Nossa História & Quem Somos Nós</h2>", unsafe_allow_html=True)
     col_hist1, col_hist2 = st.columns(2)
@@ -283,7 +262,6 @@ if not st.session_state.autenticado:
     with col_hist2:
         st.write("A **Brothers Network Finance** é formada por especialistas focados em direito bancário e mercado financeiro. Nosso propósito diário é quebrar as amarras burocráticas injustas dos bancos para que você recupere sua tranquilidade comercial de forma definitiva.")
 
-    # DEPOIMENTOS
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>Pessoas Reais, Resultados Reais</h2>", unsafe_allow_html=True)
     col_dep1, col_dep2, col_dep3 = st.columns(3)
@@ -294,15 +272,30 @@ if not st.session_state.autenticado:
     with col_dep3:
         st.markdown("<div style='background:#161622; padding:20px; border-radius:8px;'><blockquote><b>\"Atendimento sério, transparente e muito rápido. Devolve a paz de espírito.\"</b></blockquote><br><small>— Carlos H., Autônomo</small></div>", unsafe_allow_html=True)
 
-    # FAQ
+    # --- O SUPER FAQ INTERATIVO INTEGRADO DIRETO NA ÁGUIA (VIA DIALOG NATIVO SEGURO) ---
     st.markdown("---")
-    st.markdown("<h2 style='text-align: center; color: #FFD700;'>❓ Dúvidas Comuns (FAQ)</h2>", unsafe_allow_html=True)
-    with st.expander("Eu vou ter que pagar alguma coisa antes do meu processo iniciar?"):
-        st.write("Nossa análise inicial é 100% gratuita via WhatsApp. Só fechamos após mostrar o que está travando o seu perfil.")
+    st.markdown("<h2 style='text-align: center; color: #FFD700;'>❓ Central de Atendimento EagleBot</h2>", unsafe_allow_html=True)
+    st.write("Precisa de uma resposta rápida? Clique no botão abaixo para ativar os módulos de suporte do nosso mascote oficial:")
+    
+    if st.button("🦅 CLIQUE AQUI PARA ABRIR O FAQ DO EAGLEBOT", type="primary", use_container_width=True):
+        @st.dialog("🦅 Central de Respostas EagleBot v1.0", width="large")
+        def render_faq_chat():
+            st.markdown("### Olá! Sou o EagleBot. Selecione a sua dúvida técnica ou comercial abaixo:")
+            
+            aba_faq1, aba_faq2, aba_faq3 = st.tabs(["🔒 Segurança e Liminares", "⏱️ Prazos de Atuação", "📈 Como subir o Score"])
+            with aba_faq1:
+                st.info("<b>O processo é legal?</b><br>Sim, atuamos com base no Código de Defesa do Consumidor e vias judiciais para remover consultas abusivas que queimam seu nome sem autorização.", icon="🛡️")
+            with aba_faq2:
+                st.warning("<b>Quanto tempo demora para limpar?</b><br>Nossas liminares costumam ter respostas urgentes do juiz em uma média de 5 a 15 dias úteis após a distribuição do caso.", icon="⏱️")
+            with aba_faq3:
+                st.success("<b>Meu score vai subir na hora?</b><br>Assim que os apontamentos secretos e consultas excessivas são removidos do sistema, o mercado recalcula seu perfil e seu score destrava automaticamente.", icon="📊")
+            
+            st.markdown("---")
+            st.markdown("<small style='color: gray;'>Módulo de Inteligência Artificial Avançada detectado. No próximo upgrade, você poderá digitar livremente aqui para conversar comigo!</small>", unsafe_allow_html=True)
+        render_faq_chat()
 
     # SEÇÃO DO BLOG
     st.markdown("---")
-    st.markdown("<h2 style='text-align: center; color: #FFD700;'>📰 Dicas da Nossa Equipe - Aprenda a Cuidar do Seu Crédito</h2>", unsafe_allow_html=True)
     if not blog_db.empty:
         for idx, post in blog_db.iterrows():
             col_img, col_artigo = st.columns([1, 2.5])
@@ -403,14 +396,11 @@ else:
 
     with aba_novo_blog:
         st.subheader("✍️ Criador de Conteúdo Livre")
-        st.markdown("Cole o seu texto livremente. Se quiser dar formato em partes específicas, use HTML direto no campo:")
-        st.code("Exemplos:\n<b>Texto em Negrito</b>\n<i>Texto em Itálico</i>\n<span style='color: gold;'>Texto Dourado</span>")
-        
         b_titulo = st.text_input("Título da Postagem:")
         b_autor = st.text_input("Autor da Publicação:", value="Lucas - Central Brothers")
         b_cat = st.selectbox("Categoria Operacional:", ["Dicas Práticas", "Inteligência Financeira", "Passo a Passo", "Novidades do Hub"])
         b_img = st.text_input("URL da Imagem de Destaque:")
-        b_conteudo = st.text_area("Escreva aqui o artigo completo com as tags que desejar:", height=300)
+        b_conteudo = st.text_area("Escreva aqui o artigo completo:", height=300)
         
         if st.button("💥 ENVIAR E PUBLICAR ARTIGO IMEDIATAMENTE", type="primary"):
             if b_titulo and b_conteudo:
