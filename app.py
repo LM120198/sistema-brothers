@@ -5,38 +5,38 @@ import calendar
 import sqlite3
 import urllib.parse
 
-# Configuração da página com layout amplo
-st.set_page_config(page_title="Brothers Network Finance - Sistema Master", layout="wide")
+# Configuração da página interna de gestão
+st.set_page_config(page_title="Painel Interno - Brothers Network Finance", layout="wide")
 
-# --- SISTEMA DE LOGIN E SEGURANÇA ---
+# --- SISTEMA DE LOGIN ---
 def verificar_login():
     if "autenticado" not in st.session_state:
         st.session_state.autenticado = False
 
     if not st.session_state.autenticado:
         st.markdown("<h1 style='text-align: center; color: #1F497D;'>🦅 Brothers Network Finance</h1>", unsafe_allow_html=True)
-        st.markdown("<h3 style='text-align: center;'>Área Restrita - Faça Login para Acessar</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center;'>Painel Administrativo Restrito</h3>", unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns([1, 1, 1])
         with col2:
             with st.form("form_login"):
                 usuario = st.text_input("Usuário:")
                 senha = st.text_input("Senha:", type="password")
-                botao_login = st.form_submit_button("Entrar no Sistema")
+                botao_login = st.form_submit_button("Acessar Painel")
                 
                 if botao_login:
                     if usuario == "admin" and senha == "brothers2026":
                         st.session_state.autenticado = True
-                        st.success("Acesso liberado!")
                         st.rerun()
                     else:
-                        st.error("Usuário ou senha incorretos.")
+                        st.error("Acesso negado.")
         return False
     return True
 
-# --- CONEXÃO COM O BANCO DE DADOS (SQLITE) ---
-def conectar_banco():
+# --- CONEXÃO COM O BANCO DE DADOS ---
+def carregar_dados():
     conn = sqlite3.connect("brothers.db")
+    # Garante que a tabela exista se o banco for limpo
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS membros (
@@ -47,29 +47,9 @@ def conectar_banco():
             T4_MsgWhats TEXT, T5_PosVenda TEXT
         )
     """)
-    conn.commit()
-    return conn
-
-conectar_banco()
-
-def carregar_dados():
-    conn = sqlite3.connect("brothers.db")
     df = pd.read_sql_query("SELECT * FROM membros", conn)
     conn.close()
     return df
-
-def salvar_membro(nome, whats, data_nasci, msg):
-    dt = datetime.datetime.strptime(str(data_nasci), "%Y-%m-%d")
-    conn = sqlite3.connect("brothers.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO membros (
-            Nome, WhatsApp, Data_Nascimento, Mensagem, Dia_Aniv, Mes_Aniv,
-            T1_BoasVindas, T2_AnaliseCredito, T3_GatilhoOferta, T4_MsgWhats, T5_PosVenda
-        ) VALUES (?, ?, ?, ?, ?, ?, 'Pendente', 'Pendente', 'Pendente', 'Pendente', 'Pendente')
-    """, (nome, whats, str(data_nasci), msg, dt.day, dt.month))
-    conn.commit()
-    conn.close()
 
 def atualizar_status(df_editado):
     conn = sqlite3.connect("brothers.db")
@@ -83,118 +63,87 @@ def atualizar_status(df_editado):
     conn.commit()
     conn.close()
 
-# --- EXECUÇÃO DO SISTEMA ---
+# --- EXECUÇÃO DO PAINEL INTERNO ---
 if verificar_login():
     
-    if st.sidebar.button("🔒 Sair do Sistema (Logout)"):
+    if st.sidebar.button("🔒 Sair (Logout)"):
         st.session_state.autenticado = False
         st.rerun()
 
-    st.title("🦅 Brothers Network Finance Community")
-    st.subheader("Sistema Master de Gestão, Calendário e Secretária Eletrônica")
+    st.title("🦅 Central da Secretária - Brothers Network")
+    st.markdown("---")
 
-    aba1, aba2, aba3 = st.tabs(["🌐 1. Landing Page (Captura)", "📅 2. Calendário Mensal Expandido", "📊 3. Central da Secretária (Tarefas)"])
     membros_db = carregar_dados()
 
-    # --- ABA 1: CAPTURA ---
-    with aba1:
-        st.header("Cadastro de Membros & Solicitação de Atendimento")
-        st.markdown("---")
-        col_lp1, col_lp2 = st.columns([1, 1])
-        
-        with col_lp1:
-            st.markdown("### Deixe seus dados com a nossa Secretária Eletrônica")
-            with st.form("form_lp", clear_on_submit=True):
-                nome = st.text_input("Nome Completo:")
-                whatsapp = st.text_input("WhatsApp (com DDD):", placeholder="Ex: 11948086926")
-                data_nascimento = st.date_input("Data de Nascimento:", min_value=datetime.date(1940, 1, 1))
-                mensagem = st.text_area("Como a Brothers Network pode te ajudar hoje?")
-                
-                botao_enviar = st.form_submit_button("Enviar para a Comunidade")
-                
-                if botao_enviar:
-                    if nome and whatsapp:
-                        salvar_membro(nome, whatsapp, data_nascimento, mensagem)
-                        st.success(f"Olá {nome}, seus dados foram enviados!")
-                        st.rerun()
-                    else:
-                        st.error("Por favor, preencha Nome e WhatsApp.")
+    aba_gestao, aba_calendario = st.tabs(["📊 Gerenciador de Tarefas e Disparos", "📅 Calendário de Relacionamento"])
 
-        with col_lp2:
-            st.markdown("### 📈 Benefícios da Comunidade")
-            st.info("**Restauração de Crédito:** Atuação ágil via liminar judicial.")
-            st.info("**Networking de Elite:** Conexão direta com o mercado financeiro.")
-
-    # --- ABA 2: CALENDÁRIO (CORRIGIDO) ---
-    with aba2:
-        st.header("Calendário Mensal de Relacionamento")
-        hoje = datetime.date.today()
-        mes_selecionado = st.selectbox("Selecione o Mês:", list(range(1, 13)), index=hoje.month - 1, format_func=lambda x: calendar.month_name[x].upper())
-        
-        cal = calendar.monthcalendar(hoje.year, mes_selecionado)
-        nomes_dias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
-        
-        cols_dias = st.columns(7)
-        for i, nome_dia in enumerate(nomes_dias):
-            cols_dias[i].markdown(f"<p style='text-align:center; font-weight:bold; color:#1F497D;'>{nome_dia}</p>", unsafe_allow_html=True)
-            
-        for semana in cal:
-            st.markdown("<div style='margin-bottom: 5px;'></div>", unsafe_allow_html=True)
-            cols_semana = st.columns(7)
-            for i, dia in enumerate(semana):
-                if dia == 0:
-                    cols_semana[i].write("")
-                else:
-                    df_dia = membros_db[(membros_db["Dia_Aniv"] == dia) & (membros_db["Mes_Aniv"] == mes_selecionado)] if not membros_db.empty else pd.DataFrame()
-                    box_html = f"""
-                    <div style="border:1px solid #D9D9D9; padding:8px; border-radius:5px; min-height:140px; background-color:#FFFFFF; color: #000000;">
-                        <strong style="color:#4F81BD; font-size:14px;">{dia}</strong>
-                    """
-                    if not df_dia.empty:
-                        for idx, row in df_dia.iterrows():
-                            box_html += f"""
-                            <div style="background-color:#F2F5F8; margin-top:4px; padding:4px; border-radius:3px; font-size:11px; color: #333333;">
-                                🎂 <b>{row['Nome'].split()[0]}</b><br>
-                                🟢 <i>Whats: {row['T4_MsgWhats']}</i>
-                            </div>
-                            """
-                    box_html += "</div>"
-                    # CRUCIAL: Aqui adicionamos o unsafe_allow_html=True para corrigir o bug do print anterior
-                    cols_semana[i].markdown(box_html, unsafe_allow_html=True)
-
-    # --- ABA 3: GESTÃO COM BOTÃO DO WHATSAPP ---
-    with aba3:
-        st.header("Gerenciador de Tarefas e Disparos")
+    # --- ABA 1: GERENCIADOR DE TAREFAS ---
+    with aba_gestao:
+        st.subheader("Esteira de Produção e Atendimento")
         if membros_db.empty:
-            st.warning("Nenhum membro cadastrado ainda.")
+            st.info("Nenhum cliente cadastrado no banco de dados até o momento.")
         else:
-            # Gerando os links de API do WhatsApp direto para cada cliente
+            # Gerando links rápidos para o WhatsApp
             links_whats = []
             for idx, row in membros_db.iterrows():
-                msg_formatada = urllib.parse.quote(f"Olá {row['Nome']}, tudo bem? Sou da central Brothers Network Finance. Vi sua mensagem sobre: '{row['Mensagem']}'. Vamos dar andamento ao seu atendimento?")
-                links_whats.append(f"https://api.whatsapp.com/send?phone={row['WhatsApp']}&text={msg_formatada}")
+                text_msg = f"Olá {row['Nome']}, seja bem-vindo à Brothers Network Finance. Vamos dar andamento à sua solicitação?"
+                links_whats.append(f"https://api.whatsapp.com/send?phone={row['WhatsApp']}&text={urllib.parse.quote(text_msg)}")
             
-            membros_db["Abrir Atendimento"] = links_whats
+            membros_db["Ação"] = links_whats
 
             df_editado = st.data_editor(
                 membros_db,
                 column_config={
-                    "id": None,
-                    "Nome": st.column_config.TextColumn("Membro", disabled=True),
+                    "id": None, "Dia_Aniv": None, "Mes_Aniv": None,
+                    "Nome": st.column_config.TextColumn("Cliente", disabled=True, width="medium"),
                     "WhatsApp": st.column_config.TextColumn("WhatsApp", disabled=True),
                     "Data_Nascimento": st.column_config.DateColumn("Nascimento", disabled=True),
-                    "Mensagem": st.column_config.TextColumn("Mensagem Solicitada", disabled=True),
-                    "Dia_Aniv": None, "Mes_Aniv": None, # Oculta colunas de controle internas
+                    "Mensagem": st.column_config.TextColumn("Solicitação Inicial", disabled=True, width="large"),
                     "T1_BoasVindas": st.column_config.SelectboxColumn("T1: Boas-Vindas", options=["Pendente", "Concluído"]),
-                    "T2_AnaliseCredito": st.column_config.SelectboxColumn("T2: Análise Liminar", options=["Pendente", "Concluído"]),
+                    "T2_AnaliseCredito": st.column_config.SelectboxColumn("T2: Liminar/Crédito", options=["Pendente", "Concluído"]),
                     "T3_GatilhoOferta": st.column_config.SelectboxColumn("T3: Oferta", options=["Pendente", "Concluído"]),
-                    "T4_MsgWhats": st.column_config.SelectboxColumn("T4: Whats Aniv.", options=["Pendente", "Concluído"]),
+                    "T4_MsgWhats": st.column_config.SelectboxColumn("T4: Aniversário", options=["Pendente", "Concluído"]),
                     "T5_PosVenda": st.column_config.SelectboxColumn("T5: Pós-Venda", options=["Pendente", "Concluído"]),
-                    "Abrir Atendimento": st.column_config.LinkColumn("💬 Chamar no WhatsApp", display_text="Chamar agora")
+                    "Ação": st.column_config.LinkColumn("💬 WhatsApp", display_text="Chamar Cliente")
                 },
-                hide_index=True
+                hide_index=True,
+                use_container_width=True
             )
-            if st.button("Salvar Alterações de Status"):
+            
+            if st.button("💾 Salvar Alterações de Status", type="primary"):
                 atualizar_status(df_editado)
-                st.success("Status salvos com sucesso!")
+                st.success("Alterações salvas com sucesso!")
                 st.rerun()
+
+    # --- ABA 2: CALENDÁRIO REFORMULADO (SEM ERRO VISUAL) ---
+    with aba_calendario:
+        st.subheader("Aniversariantes do Mês")
+        hoje = datetime.date.today()
+        
+        meses_nomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+        mes_selecionado = st.selectbox("Selecione o Mês para Análise:", list(range(1, 13)), index=hoje.month - 1, format_func=lambda x: meses_nomes[x-1])
+        
+        if membros_db.empty:
+            st.info("Nenhum cliente no banco de dados.")
+        else:
+            # Filtra aniversariantes do mês selecionado
+            df_aniv_mes = membros_db[membros_db["Mes_Aniv"] == mes_selecionado]
+            
+            if df_aniv_mes.empty:
+                st.write("Não há aniversariantes cadastrados neste mês.")
+            else:
+                # Exibe em formato de lista/cards limpos e modernos livres de erro de código
+                for idx, row in df_aniv_mes.iterrows():
+                    with st.container():
+                        col_aniv1, col_aniv2, col_aniv3 = st.columns([1, 2, 2])
+                        with col_aniv1:
+                            st.metric(label="Dia do Aniversário", value=f"Dia {row['Dia_Aniv']}")
+                        with col_aniv2:
+                            st.markdown(f"**Cliente:** {row['Nome']}")
+                            st.markdown(f"**Status de Contato:** `{row['T4_MsgWhats']}`")
+                        with col_aniv3:
+                            # Link direto para dar parabéns
+                            msg_parabens = f"Parabéns, {row['Nome']}! Como presente da Brothers Network Finance, preparamos uma condição exclusiva para você hoje."
+                            link_p = f"https://api.whatsapp.com/send?phone={row['WhatsApp']}&text={urllib.parse.quote(msg_parabens)}"
+                            st.link_button("🎉 Enviar Mensagem de Parabéns", link_p)
+                        st.markdown("---")
