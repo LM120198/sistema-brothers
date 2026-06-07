@@ -4,12 +4,11 @@ import datetime
 import calendar
 import sqlite3
 import urllib.parse
-import streamlit.components.v1 as components
 
-# Configuração da página - Tema Escuro e Amplo de Alta Performance
+# Configuração da página - Estável de Alta Performance
 st.set_page_config(page_title="Brothers Network Finance - Oficial", layout="wide", initial_sidebar_state="collapsed")
 
-# --- CONEXÃO E ESTRUTURA DO BANCO DE DADOS (PRESERVADA) ---
+# --- CONEXÃO E ESTRUTURA DO BANCO DE DADOS (100% ESTÁVEL) ---
 def conectar_banco():
     conn = sqlite3.connect("brothers.db")
     cursor = conn.cursor()
@@ -82,7 +81,6 @@ def salvar_membro(nome, whats, data_nasci, msg):
     conn.commit()
     conn.close()
 
-# --- LINHA CORRIGIDA DE FORMA CIRÚRGICA ---
 def salvar_post(titulo, autor, categoria, conteudo, url_img):
     data_atual = datetime.date.today().strftime("%d/%m/%Y")
     conn = sqlite3.connect("brothers.db")
@@ -114,9 +112,9 @@ def inicializar_conteudo_blog():
     if check == 0:
         posts_iniciais = [
             (
-                "Guia Prático: O Que Fazer Quando o Banco Nega Crédito Mesmo Com o Nome Limpo?",
-                "Lucas - Performance", "Dicas Práticas",
-                "Muitas pessoas enfrentam uma situação frustrante: pagam suas contas, não possuem nenhuma restrição, mas quando vão ao banco a resposta é um não.<br><br><b>Por que isso acontece?</b><br>O motivo oculto se chama <i>'Histórico de Consultas Excessivas'</i>. Toda vez que tenta pedir crédito em várias lojas seguidas, o sistema joga sua pontuação para baixo.<br><br><b>Como resolver?</b><br>Evite colocar o CPF em simuladores por 30 dias. Caso o seu nome tenha sido negativado no passado de forma injusta, nossa banca pode intervir apagando esse rastro via liminar judicial.",
+                "Como o Banco Analisa Seu Perfil Quando Você Pede um Empréstimo?",
+                "Lucas - Central Brothers", "Dicas Práticas",
+                "Muitas pessoas pagam suas contas em dia, mas continuam recebendo respostas negativas ao tentar um financiamento. O motivo real está nas consultas em massa que as lojas fazem no seu CPF, derrubando o score interno do mercado de forma injusta. Para corrigir isso e forçar os bancos a liberarem crédito limpo, nossa equipe atua direto na raiz do problema removendo esses rastros de forma definitiva.",
                 "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=60"
             )
         ]
@@ -126,26 +124,6 @@ def inicializar_conteudo_blog():
 
 inicializar_conteudo_blog()
 
-# --- ESTILOS, ANIMAÇÕES E MASCOTE ---
-st.markdown("""
-<style>
-    .stApp {
-        background-image: radial-gradient(circle, rgba(20,20,25,1) 0%, rgba(10,10,12,1) 100%);
-        position: relative;
-    }
-    @keyframes floatMascot {
-        0% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-10px) rotate(2deg); }
-        100% { transform: translateY(0px) rotate(0deg); }
-    }
-    .mascote-container {
-        animation: floatMascot 4s ease-in-out infinite;
-        text-align: center;
-        padding: 10px;
-    }
-</style>
-""", unsafe_allow_html=True)
-
 # --- CONTROLE DE ACESSO ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
@@ -153,7 +131,6 @@ if "autenticado" not in st.session_state:
 st.sidebar.title("🦅 Área Restrita")
 if not st.session_state.autenticado:
     with st.sidebar.form("login_form"):
-        st.markdown("<div class='mascote-container'><span style='font-size: 3rem;'>🤖🦅</span><br><small style='color:#FFD700;'><b>EagleBot:</b> Identifique-se, Diretor!</small></div>", unsafe_allow_html=True)
         usuario = st.text_input("Usuário:")
         senha = st.text_input("Senha:", type="password")
         if st.form_submit_button("Acessar Painel"):
@@ -175,12 +152,8 @@ blog_db = carregar_posts()
 # 🌐 VISÃO PÚBLICA
 # =========================================================================
 if not st.session_state.autenticado:
-    col_header1, col_header2 = st.columns([4, 1])
-    with col_header1:
-        st.markdown("<h1 style='color: #FFD700; font-size: 3.5rem; font-weight: 800; margin-bottom:0;'>BROTHERS NETWORK FINANCE</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #FFFFFF; font-size: 1.3rem; font-weight: 300;'>Seu Nome Limpo de Verdade, Score Alto e Acesso às Melhores Linhas de Crédito</p>", unsafe_allow_html=True)
-    with col_header2:
-        st.markdown("<div class='mascote-container'><span style='font-size: 4rem;'>🦅</span><br><b style='color:#FFD700; font-size:11px;'>EagleBot da Brothers</b></div>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #FFD700; font-size: 3.5rem; font-weight: 800;'>BROTHERS NETWORK FINANCE</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #FFFFFF; font-size: 1.3rem; font-weight: 300;'>Seu Nome Limpo, Score Alto e Acesso às Melhores Linhas de Crédito</p>", unsafe_allow_html=True)
     
     st.image("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&auto=format&fit=crop&q=80", use_container_width=True)
     st.write("\n")
@@ -196,26 +169,26 @@ if not st.session_state.autenticado:
         score_usuario = st.slider("Selecione seu Score aproximado:", min_value=0, max_value=1000, value=350, step=10)
         
         if score_usuario < 400:
-            st.error(f"🚨 **Perfil Bloqueado (Score: {score_usuario}):** Os bancos negam seus pedidos. **Nossa Solução:** Limpamos seu histórico na justiça via liminar.")
+            st.error(f"🚨 **Perfil Bloqueado (Score: {score_usuario}):** Os bancos negam seus pedidos. **Nossa Solução:** Limpamos seu histórico na justiça via liminar urgente.")
             perfil_score = "Critico"
         elif score_usuario < 700:
             st.warning(f"⚠️ **Perfil de Risco Moderado (Score: {score_usuario}):** Sofre com juros altos. **Nossa Solução:** Calibramos seu score removendo consultas excessivas.")
             perfil_score = "Moderado"
         else:
-            st.success(f"💎 **Perfil Elite (Score: {score_usuario}):** Pronto para o Hub VIP de networking e investimentos.")
+            st.success(f"💎 **Perfil Elite (Score: {score_usuario}):** Pronto para o Hub VIP de networking e investimentos de alta performance.")
             perfil_score = "Premium"
             
         st.markdown("---")
         st.write("• **Limpamos Seu Passado:** Retiramos apontamentos negativos de forma definitiva.")
         st.write("• **Sem Enrolação:** Pedidos urgentes ao juiz antes do fim do processo.")
-        st.warning("⚠️ **Vagas Limitadas:** Atendimento semanal restrito para manter a agilidade.")
+        st.warning("⚠️ **Vagas Limitadas:** Atendimento semanal restrito para manter a agilidade da equipe.")
         
     with col_form:
         st.markdown("### 🦅 Solicite Uma Análise Gratuita do Seu Caso")
         with st.form("form_portal", clear_on_submit=True):
             nome = st.text_input("Seu Nome Completo ou Razão Social:")
-            whatsapp = st.text_input("WhatsApp com DDD (Ex: 11948086926):", placeholder="Somente números")
-            data_nascimento = st.date_input("Data de Nascimento ou Fundação:", min_value=datetime.date(1940, 1, 1))
+            whatsapp = st.text_input("WhatsApp com DDD (Somente números):", placeholder="Ex: 11948086926")
+            data_nascimento = st.date_input("Data de Nascimento / Fundação:", min_value=datetime.date(1940, 1, 1))
             servico = st.selectbox("Qual o maior problema hoje?", ["Quero Limpar meu Nome / Subir meu Score Urgente", "Preciso de Empréstimo com Juros Baixos", "Quero Investimentos Lucrativos", "Quero Networking na Comunidade"])
             detalhes = st.text_area("Conte resumidamente o que aconteceu:")
             
@@ -228,14 +201,16 @@ if not st.session_state.autenticado:
                 else:
                     st.error("Nome e WhatsApp são obrigatórios.")
 
+    # HISTÓRIA E EQUIPE
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>Nossa História & Quem Somos Nós</h2>", unsafe_allow_html=True)
     col_hist1, col_hist2 = st.columns(2)
     with col_hist1:
         st.image("https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&auto=format&fit=crop&q=60", use_container_width=True)
     with col_hist2:
-        st.write("A **Brothers Network Finance** é formada por especialistas focados em direito bancário e mercado financeiro. Nosso propósito diário é quebrar as amarras burocráticas injustas dos bancos para que você recupere sua tranquilidade e cresça de verdade.")
+        st.write("A **Brothers Network Finance** é formada por especialistas focados em direito bancário e mercado financeiro. Nosso propósito diário é quebrar as amarras burocráticas injustas dos bancos para que você recupere sua tranquilidade comercial e cresça de verdade.")
 
+    # DEPOIMENTOS
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>Pessoas Reais, Resultados Reais</h2>", unsafe_allow_html=True)
     col_dep1, col_dep2, col_dep3 = st.columns(3)
@@ -249,11 +224,13 @@ if not st.session_state.autenticado:
         st.markdown("> **\"Atendimento sério, transparente e muito rápido. Devolve a paz de espírito comercial.\"**")
         st.caption("— **Carlos H.**, Autônomo")
 
+    # FAQ
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>❓ Dúvidas Comuns (FAQ)</h2>", unsafe_allow_html=True)
     with st.expander("Eu vou ter que pagar alguma coisa antes do meu processo iniciar?"):
         st.write("Nossa análise inicial é 100% gratuita via WhatsApp. Só fechamos após mostrar o que está travando o seu perfil.")
 
+    # SEÇÃO DO BLOG COM O SISTEMA LEIA MAIS REPARADO
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>📰 Dicas da Nossa Equipe - Aprenda a Cuidar do Seu Crédito</h2>", unsafe_allow_html=True)
     if not blog_db.empty:
@@ -277,11 +254,11 @@ if not st.session_state.autenticado:
             st.markdown("<br><hr style='border-top: 1px solid #222;'><br>", unsafe_allow_html=True)
 
 # =========================================================================
-# 📊 VISÃO PRIVADA
+# 📊 VISÃO PRIVADA (CRM, CALENDÁRIO E GRÁFICOS RESTAURADOS)
 # =========================================================================
 else:
     st.title("🦅 Central Administrativa Master - Brothers Network")
-    aba_gestao, aba_calendario, aba_analytics, aba_novo_blog = st.tabs(["📊 Gerenciador de Tarefas e Disparos", "📅 Calendário de Relacionamento", "📈 Dashboard de Performance", "✍️ Publicar Novo Conteúdo no Blog"])
+    aba_gestao, aba_calendario, aba_analytics, aba_novo_blog = st.tabs(["📊 Gerenciador de Tarefas e Disparos", "📅 Calendário de Relacionamento", "📈 Dashboard de Performance", "✍ *Criar Conteúdo Manual*"])
 
     with aba_gestao:
         st.subheader("Esteira de Atendimento Dinâmica")
@@ -355,44 +332,21 @@ else:
             st.bar_chart(membros_db["Responsavel"].value_counts(), use_container_width=True)
 
     with aba_novo_blog:
-        st.subheader("✍️ Editor de Postagens Profissional WYSIWYG (Estilo Blogger)")
+        st.subheader("✍️ Criador de Conteúdo Livre")
+        st.markdown("Cole o seu texto livremente. Se quiser dar formato em partes específicas, use HTML direto no campo:")
+        st.code("Exemplos:\n<b>Texto em Negrito</b>\n<i>Texto em Itálico</i>\n<span style='color: gold;'>Texto Dourado</span>")
+        
         b_titulo = st.text_input("Título da Postagem:")
         b_autor = st.text_input("Autor da Publicação:", value="Lucas - Central Brothers")
         b_cat = st.selectbox("Categoria Operacional:", ["Dicas Práticas", "Inteligência Financeira", "Passo a Passo", "Novidades do Hub"])
         b_img = st.text_input("URL da Imagem de Destaque:")
         
-        quill_html = """
-        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-        <div id="editor-container" style="height: 200px; background: #fff; color: #000;"></div>
-        <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-        <script>
-          var quill = new Quill('#editor-container', {
-            modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'header': [1, 2, 3, false] }], [{ 'color': [] }], [{ 'list': 'ordered'}, { 'list': 'bullet' }]] },
-            theme: 'snow'
-          });
-          quill.on('text-change', function() {
-             window.parent.postMessage({
-                type: 'streamlit:setComponentValue',
-                value: quill.root.innerHTML
-             }, '*');
-          });
-        </script>
-        """
-        editor_data = components.html(quill_html, height=270)
-        
-        if "conteudo_blogger" not in st.session_state:
-            st.session_state.conteudo_blogger = ""
-        if editor_data:
-            st.session_state.conteudo_blogger = editor_data
-            
-        st.markdown("#### 👁️ Pré-visualização do Artigo ao Vivo:")
-        st.markdown(f"<div style='background-color: #1a1a24; padding: 15px; border-radius: 8px; border: 1px solid #333;'>{st.session_state.conteudo_blogger}</div>", unsafe_allow_html=True)
+        b_conteudo = st.text_area("Escreva aqui o artigo completo com as tags que desejar:", height=300)
         
         if st.button("💥 ENVIAR E PUBLICAR ARTIGO IMEDIATAMENTE", type="primary"):
-            if b_titulo and st.session_state.conteudo_blogger:
-                salvar_post(b_titulo, b_autor, b_cat, st.session_state.conteudo_blogger, b_img)
-                st.session_state.conteudo_blogger = ""
+            if b_titulo and b_conteudo:
+                salvar_post(b_titulo, b_autor, b_cat, b_conteudo, b_img)
                 st.success("🔥 Artigo publicado com sucesso!")
                 st.rerun()
             else:
-                st.error("Preencha o Título e escreva o texto no editor.")
+                st.error("Preencha o Título e o Conteúdo.")
