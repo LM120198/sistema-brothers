@@ -12,7 +12,6 @@ st.set_page_config(page_title="Brothers Network Finance - Oficial", layout="wide
 def conectar_banco():
     conn = sqlite3.connect("brothers.db")
     cursor = conn.cursor()
-    # Tabela de clientes existente
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS membros (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,7 +21,6 @@ def conectar_banco():
             T4_MsgWhats TEXT, T5_PosVenda TEXT
         )
     """)
-    # NOVA TABELA: Sistema de Blog Dinâmico integrado
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS blog (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -82,7 +80,7 @@ def atualizar_status(df_editado):
     conn.commit()
     conn.close()
 
-# --- ALIMENTAÇÃO INICIAL DO BLOG (CONTEÚDO REAL DE STARTUP SE ESTIVER VAZIO) ---
+# --- ALIMENTAÇÃO INICIAL DO BLOG ---
 def inicializar_conteudo_blog():
     conn = sqlite3.connect("brothers.db")
     cursor = conn.cursor()
@@ -114,7 +112,7 @@ def inicializar_conteudo_blog():
 
 inicializar_conteudo_blog()
 
-# --- CONTROLE DE ACESSO (SIDEBAR DISCRETA) ---
+# --- CONTROLE DE ACESSO ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
@@ -130,41 +128,51 @@ if not st.session_state.autenticado:
             else:
                 st.sidebar.error("Acesso negado.")
 else:
-    st.sidebar.success("Modo Administrador Ativo")
+    st.sidebar.success("Modo Administrator Ativo")
     if st.sidebar.button("🔒 Sair do Painel (Logout)"):
         st.session_state.autenticado = False
         st.rerun()
 
-# --- CARREGAMENTO DOS BANCOS ---
 membros_db = carregar_dados()
 blog_db = carregar_posts()
 
 # =========================================================================
-# 🌐 VISÃO PÚBLICA: PORTAL INSTITUCIONAL & BLOG DE ELITE
+# 🌐 VISÃO PÚBLICA: PORTAL INSTITUCIONAL COM TERMÔMETRO DE SCORE INTERATIVO
 # =========================================================================
 if not st.session_state.autenticado:
     
-    # HERO SECTION (Topo de Alto Padrão)
     st.markdown("<h1 style='text-align: center; color: #FFD700; font-size: 3.5rem; font-weight: 800;'>BROTHERS NETWORK FINANCE</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #FFFFFF; font-size: 1.4rem; font-weight: 300;'>Inteligência Jurídica, Restauração de Crédito e Networking de Alta Performance</p>", unsafe_allow_html=True)
     
-    # Imagem Principal do Portal
     st.image("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&auto=format&fit=crop&q=80", use_container_width=True)
     st.write("\n")
     
-    # BLOCO DE CONVERSÃO & CAPTURA
     st.markdown("---")
     col_info, col_form = st.columns([1, 1.1])
     
     with col_info:
         st.markdown("## ⚖️ Soluções Estratégicas Hegemônicas")
         st.write("\n")
-        st.markdown("### 🏛️ Restauração via Liminar Judicial")
-        st.write("Nossa equipe atua diretamente na raiz do problema, acionando mecanismos jurídicos para a suspensão de apontamentos e restrições nos órgãos de proteção ao crédito antes do julgamento do mérito, limpando seu histórico e devolvendo seu poder de compra imediatamente.")
         
-        st.markdown("### 🌐 Comunidade e Hub de Negócios")
-        st.write("Muito mais que um serviço: uma comunidade restrita de empresários, investidores e especialistas do mercado financeiro focados em blindagem, alavancagem e parcerias comerciais de alto nível.")
-        st.write("\n")
+        # --- IMPLEMENTAÇÃO DO TERMÔMETRO INTERATIVO DE SCORE ---
+        st.markdown("### 📊 Termômetro Analítico de Score")
+        st.write("Arraste a barra abaixo com base no seu cenário atual para ver o diagnóstico prévio do nosso algoritmo:")
+        
+        score_usuario = st.slider("Selecione seu Score de Crédito aproximado:", min_value=0, max_value=1000, value=350, step=10)
+        
+        if score_usuario < 400:
+            st.error(f"🚨 **Diagnóstico Crítico (Score: {score_usuario}):** Sua pontuação atual está bloqueando seu crescimento econômico, gerando juros abusivos e restrições severas. Nossa banca jurídica pode intervir imediatamente através de uma ação com pedido de **liminar judicial** para restaurar seu poder de compra.")
+            perfil_score = "Crítico (Abaixo de 400) - Necessita Liminar Urgente"
+        elif score_usuario < 700:
+            st.warning(f"⚠️ **Diagnóstico Moderado (Score: {score_usuario}):** Seu perfil possui chances médias de aprovação, mas ainda sofre com taxas de juros elevadas e limites reduzidos. Recomendamos nosso processo de **Blindagem de Histórico** para destravar linhas de crédito corporativo competitivas.")
+            perfil_score = "Moderado (400 a 700) - Recomendado Blindagem de Histórico"
+        else:
+            st.success(f"💎 **Diagnóstico de Elite (Score: {score_usuario}):** Sua saúde financeira é excelente. Seu perfil está altamente qualificado para ingressar diretamente no nosso **Hub de Networking e Alocação de Investimentos de Alta Performance**, conectando-se com grandes players do mercado.")
+            perfil_score = "Premium (Acima de 700) - Pronto para Hub de Investimentos/Networking"
+            
+        st.markdown("---")
+        st.markdown("### 🏛️ Restauração via Liminar Judicial")
+        st.write("Nossa equipe atua diretamente na raiz do problema, acionando mecanismos jurídicos para a suspensão de apontamentos e restrições nos órgãos de proteção ao crédito antes do julgamento do mérito.")
         st.warning("⚠️ **Nota de Escassez:** O acesso à comunidade e a triagem de processos são limitados semanalmente para garantir a celeridade jurídica de cada membro.")
         
     with col_form:
@@ -183,13 +191,15 @@ if not st.session_state.autenticado:
             
             if st.form_submit_button("SOLICITAR PROTOCOLO DE ATENDIMENTO PRIORITÁRIO"):
                 if nome and whatsapp:
-                    msg_completa = f"[{servico}] {detalhes}"
+                    # Integra dinamicamente o diagnóstico do termômetro na mensagem que vai para o banco administrativo
+                    msg_completa = f"📊 [Diagnóstico Score: {perfil_score} | Valor: {score_usuario}] | Gargalo: {servico} | Obs: {detalhes}"
                     salvar_membro(nome, whatsapp, data_nascimento, msg_completa)
-                    st.success(f"🔥 Protocolo gerado com sucesso para {nome}! Nossa Secretária Eletrônica já direcionou seu perfil para a banca de análise.")
+                    st.success(f"🔥 Protocolo gerado com sucesso para {nome}! Nossa Secretária Eletrônica já direcionou seu perfil e o diagnóstico do termômetro para a banca de análise.")
+                    st.rerun()
                 else:
                     st.error("Nome e WhatsApp são obrigatórios para a triagem.")
 
-    # SEÇÃO: NOSSA HISTÓRIA E EQUIPE (HUMANIZAÇÃO)
+    # SEÇÃO: NOSSA HISTÓRIA E EQUIPE
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>Nossa História & Propósito</h2>", unsafe_allow_html=True)
     
@@ -202,7 +212,7 @@ if not st.session_state.autenticado:
         st.markdown("### Nossa Missão")
         st.write("Não oferecemos apenas assessoria; nós restabelecemos a dignidade financeira e operacional dos nossos membros. Criamos uma verdadeira coalizão onde soluções jurídicas agressivas de limpeza de nome encontram oportunidades reais de investimentos e parcerias empresariais.")
 
-    # SEÇÃO: DEPOIMENTOS DE CLIENTES REAIS (PROVA SOCIAL)
+    # SEÇÃO: DEPOIMENTOS DE CLIENTES REAIS
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>Casos de Sucesso da Comunidade</h2>", unsafe_allow_html=True)
     st.write("\n")
@@ -218,12 +228,9 @@ if not st.session_state.autenticado:
         st.markdown("> **\"O diferencial é a seriedade e a discrição. O atendimento via central eletrônica nos mantém atualizados sem burocracia.\"**")
         st.caption("— **Carlos H.**, Construtora Incorporadora")
 
-    # =========================================================================
-    # O BLOG DE VERDADE COM IMAGENS E ARTIGOS REAIS
-    # =========================================================================
+    # O BLOG DE VERDADE
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>📰 Inside the Network - Conteúdo e Inteligência Diária</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #BBBBBB;'>Mantenha-se atualizado com as análises da nossa equipe técnica</p>", unsafe_allow_html=True)
     st.write("\n")
 
     if blog_db.empty:
@@ -255,7 +262,6 @@ else:
         "✍️ Publicar Novo Conteúdo no Blog"
     ])
 
-    # --- ABA 1: GERENCIADOR (PRESERVADO INTEGRAMENTE) ---
     with aba_gestao:
         st.subheader("Esteira de Atendimento Dinâmica")
         if membros_db.empty:
@@ -283,7 +289,7 @@ else:
                     "Nome": st.column_config.TextColumn("Cliente", disabled=True, width="medium"),
                     "WhatsApp": st.column_config.TextColumn("WhatsApp", disabled=True),
                     "Data_Nascimento": st.column_config.DateColumn("Nascimento", disabled=True),
-                    "Mensagem": st.column_config.TextColumn("Solicitação", disabled=True, width="medium"),
+                    "Mensagem": st.column_config.TextColumn("Solicitação / Diagnóstico do Score", disabled=True, width="large"),
                     "T1_BoasVindas": st.column_config.SelectboxColumn("T1: Boas-Vindas", options=["Pendente", "Concluído"]),
                     "T2_AnaliseCredito": st.column_config.SelectboxColumn("T2: Liminar/Crédito", options=["Pendente", "Concluído"]),
                     "T3_GatilhoOferta": st.column_config.SelectboxColumn("T3: Oferta Upgrade", options=["Pendente", "Concluído"]),
@@ -300,7 +306,6 @@ else:
                 st.success("Esteira de atendimento gravada com sucesso!")
                 st.rerun()
 
-    # --- ABA 2: CALENDÁRIO (PRESERVADO INTEGRAMENTE) ---
     with aba_calendario:
         st.subheader("Aniversariantes do Mês")
         hoje = datetime.date.today()
@@ -323,22 +328,19 @@ else:
                             st.markdown(f"**Cliente:** {row['Nome']}")
                             st.markdown(f"**Contato de Niver:** `{row['T4_MsgWhats']}`")
                         with col3:
-                            msg_p = f"Parabéns, {row['Nome']}! Como presente da Brothers Network, preparamos uma condição exclusiva de crédito para você hoje."
+                            msg_p = f"Parabéns, {row['Nome']}! Como presente da Brothers Network, preparamos uma Vectors de crédito exclusiva para você hoje."
                             link_p = f"https://api.whatsapp.com/send?phone={row['WhatsApp']}&text={urllib.parse.quote(msg_p)}"
                             st.link_button("🎉 Mandar Parabéns Comercial", link_p)
                         st.markdown("---")
 
-    # --- ABA 3: GERADOR DE CONTEÚDO DINÂMICO PARA O BLOG ---
     with aba_novo_blog:
         st.subheader("Painel de Imprensa e Conteúdo Diário")
-        st.markdown("Publique análises de mercado, notícias jurídicas ou atualizações da equipe diretamente na home do portal.")
-        
         with st.form("form_novo_post", clear_on_submit=True):
             b_titulo = st.text_input("Título do Artigo:")
-            b_autor = st.text_input("Autor do Texto (Ex: Seu Nome, Conselho Jurídico):", value="Diretoria Brothers")
+            b_autor = st.text_input("Autor do Texto:", value="Diretoria Brothers")
             b_cat = st.selectbox("Categoria:", ["Direito Bancário", "Inteligência Financeira", "Networking", "Bastidores da Equipe", "Avisos Gerais"])
-            b_img = st.text_input("URL de uma imagem de destaque (Opcional):", placeholder="https://images.unsplash.com/...", help="Pode pegar links de fotos profissionais de sites gratuitos como o Unsplash.")
-            b_conteudo = st.text_area("Conteúdo Completo do Artigo (Escreva o texto real que será postado):", height=250)
+            b_img = st.text_input("URL de uma imagem de destaque (Opcional):", placeholder="https://images.unsplash.com/...")
+            b_conteudo = st.text_area("Conteúdo Completo do Artigo:", height=250)
             
             if st.form_submit_button("💥 PUBLICAR IMEDIATAMENTE NO PORTAL"):
                 if b_titulo and b_conteudo:
