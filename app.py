@@ -29,7 +29,7 @@ def conectar_banco():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS blog (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            Titulo TEXT, Autor TEXT, Data TEXT, Categoria TEXT, Conteudo TEXT, Imagem_Url TEXT
+            Titulo TEXT, Autor TEXT, Data TEXT, Categoria TEXT, Content TEXT, Imagem_Url TEXT
         )
     """)
     cursor.execute("CREATE TABLE IF NOT EXISTS controle_rodizio (id INTEGER PRIMARY KEY, ultimo_indice INTEGER)")
@@ -86,7 +86,7 @@ def salvar_post(titulo, autor, categoria, conteudo, url_img):
     conn = sqlite3.connect("brothers.db")
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO blog (Titulo, Autor, Data, Categoria, Conteudo, Imagem_Url)
+        INSERT INTO blog (Titulo, Autor, Data, Categoria, Content, Imagem_Url)
         VALUES (?, ?, ?, ?, ?, ?)
     """, (titulo, autor, data_atual, categoria, conteudo, url_img))
     conn.commit()
@@ -104,135 +104,125 @@ def atualizar_status(df_editado):
     conn.commit()
     conn.close()
 
-# --- ARQUIVO CENTRAL DE ANIMAÇÕES CSS COMPLETO (ANIMA O SITE INTEIRO) ---
+# --- ARQUIVO CENTRAL DE ESTILO, INTRO ANIMADA E MASCOTE FIXED ---
 st.markdown("""
 <style>
-    /* Configuração Geral do Tema Escuro */
-    .stApp {
-        background-color: #0e0e12;
-    }
+    .stApp { background-color: #0e0e12; }
 
-    /* Animação de Entrada Fluida para o Site Inteiro */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    /* --- TELA DE INTRODUÇÃO TRIUNFAL (FINANCE ANIMATION) --- */
+    @keyframes fadeOutIntro {
+        0% { opacity: 1; visibility: visible; }
+        90% { opacity: 1; }
+        100% { opacity: 0; visibility: hidden; }
+    }
+    @keyframes goldChuva {
+        0% { background-position: 0px 0px; }
+        100% { background-position: 0px 1000px; }
+    }
+    @keyframes logoPulse {
+        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px #FFD700); }
+        50% { transform: scale(1.05); filter: drop-shadow(0 0 25px #FFD700); }
     }
     
-    /* Aplica o surgimento suave nos blocos principais da página */
+    #intro-screen {
+        position: fixed !important;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background-color: #07070a;
+        background-image: linear-gradient(rgba(255, 215, 0, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 215, 0, 0.03) 1px, transparent 1px);
+        background-size: 30px 30px;
+        z-index: 9999999 !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        animation: fadeOutIntro 2.8s ease forwards;
+        pointer-events: none;
+    }
+    
+    .intro-logo {
+        color: #FFD700;
+        font-size: 3rem;
+        font-weight: 900;
+        letter-spacing: 4px;
+        animation: logoPulse 1.5s ease-in-out infinite;
+        text-align: center;
+    }
+    
+    .intro-sub {
+        color: #ffffff;
+        font-size: 1rem;
+        letter-spacing: 2px;
+        margin-top: 10px;
+        opacity: 0.8;
+    }
+
+    /* Animação de Entrada do Site Pós-Intro */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
     div[data-testid="stVerticalBlock"] > div {
         animation: fadeInUp 0.8s cubic-bezier(0.25, 1, 0.5, 1) both;
     }
 
-    /* Efeito de Foco Pulsante Dourado nos Campos do Formulário */
-    .stTextInput input:focus, .stTextArea textarea:focus, .stSelectbox div[data-baseweb="select"] {
-        border-color: #FFD700 !important;
-        box-shadow: 0 0 10px rgba(255, 215, 0, 0.4) !important;
-        transition: all 0.3s ease;
-    }
-
-    /* --- SISTEMA INTERATIVO AVANÇADO DO EAGLEBOT (FIXO E REATIVO AO MOUSE) --- */
+    /* --- FIXAÇÃO ABSOLUTA DO EAGLEBOT CONTRA SUMIÇOS --- */
     .eagle-widget-fixed {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        z-index: 99999;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        pointer-events: auto;
+        position: fixed !important;
+        bottom: 35px !important;
+        right: 35px !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        pointer-events: auto !important;
     }
-
-    /* Balão de Fala Inicial */
     .widget-bubble-live {
-        background: #161622;
-        border: 2px solid #FFD700;
-        border-radius: 12px;
-        padding: 12px;
-        color: #fff;
-        font-size: 13px;
-        text-align: center;
-        width: 230px;
-        margin-bottom: 15px;
-        box-shadow: 0px 8px 24px rgba(0,0,0,0.6);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        opacity: 0.9;
+        background: #161622 !important;
+        border: 2px solid #FFD700 !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+        color: #fff !important;
+        font-size: 13px !important;
+        text-align: center !important;
+        width: 220px !important;
+        margin-bottom: 15px !important;
+        box-shadow: 0px 8px 24px rgba(0,0,0,0.7) !important;
+        transition: all 0.3s ease !important;
     }
-
-    /* O Avatar da Águia */
     .eagle-avatar-live {
-        font-size: 4rem;
-        user-select: none;
-        cursor: pointer;
-        transform-origin: center;
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        animation: smoothFloat 3s ease-in-out infinite;
+        font-size: 4rem !important;
+        user-select: none !important;
+        cursor: pointer !important;
+        animation: smoothFloat 2.5s ease-in-out infinite !important;
     }
-
-    /* Animação de Respiração/Flutuação Natural da Águia */
     @keyframes smoothFloat {
         0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
+        50% { transform: translateY(-12px); }
     }
-
-    /* MÁGICA DA INTERATIVIDADE: Quando o usuário passa o mouse por cima do Widget */
     .eagle-widget-fixed:hover .widget-bubble-live {
-        background: #FFD700;
-        color: #000;
-        transform: scale(1.05);
-        box-shadow: 0px 12px 30px rgba(255, 215, 0, 0.2);
+        background: #FFD700 !important;
+        color: #000 !important;
+        transform: scale(1.03);
     }
-    
     .eagle-widget-fixed:hover .eagle-avatar-live {
-        transform: scale(1.2) rotate(5deg);
-    }
-
-    /* Estilização Premium das Seções e Depoimentos */
-    .bloco-premium {
-        background: #161622;
-        padding: 25px;
-        border-radius: 10px;
-        border-top: 3px solid #FFD700;
-        box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
-        transition: transform 0.3s ease;
-    }
-    .bloco-premium:hover {
-        transform: translateY(-4px);
+        transform: scale(1.15);
     }
 </style>
+
+<!-- Injeção Estrutural da Tela de Intro -->
+<div id="intro-screen">
+    <div class="intro-logo">🦅 BROTHERS FINANCE</div>
+    <div class="intro-sub">CONECTANDO SISTEMAS...</div>
+</div>
 """, unsafe_allow_html=True)
 
-# --- INICIALIZAÇÃO DO BLOG SE ESTIVER VAZIO ---
-def inicializar_conteudo_blog():
-    conn = sqlite3.connect("brothers.db")
-    cursor = conn.cursor()
-    if cursor.execute("SELECT COUNT(*) FROM blog").fetchone()[0] == 0:
-        posts_iniciais = [
-            (
-                "Como o Banco Analisa Seu Perfil Quando Você Pede um Empréstimo?",
-                "Lucas - Central Brothers", "Dicas Práticas",
-                "Muitas pessoas pagam suas contas em dia, mas continuam recebendo respostas negativas ao tentar um financiamento. O motivo real está nas consultas em massa que as lojas fazem no seu CPF, derrubando o score interno do mercado de forma injusta. Para corrigir isso e forçar os bancos a liberarem crédito limpo, nossa equipe atua direto na raiz do problema removendo esses rastros de forma definitiva.",
-                "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=60"
-            )
-        ]
-        cursor.executemany("INSERT INTO blog (Titulo, Autor, Categoria, Conteudo, Imagem_Url, Data) VALUES (?, ?, ?, ?, ?, '06/06/2026')", posts_iniciais)
-        conn.commit()
-    conn.close()
-
-inicializar_conteudo_blog()
-
-# --- CONFIGURAÇÃO DE SESSÃO DO LOGIN ---
+# --- ABA DE LOGIN ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
 if not st.session_state.autenticado:
     with st.sidebar.form("login_form"):
-        st.markdown("<h3 style='text-align:center; color:#FFD700;'>Autenticação</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align:center; color:#FFD700;'>Área Restrita</h3>", unsafe_allow_html=True)
         usuario = st.text_input("Usuário:")
         senha = st.text_input("Senha:", type="password")
         if st.form_submit_button("Acessar Central"):
@@ -251,15 +241,15 @@ membros_db = carregar_dados()
 blog_db = carregar_posts()
 
 # =========================================================================
-# 🌐 VISÃO PÚBLICA (PORTAL PREMIUM TOTALMENTE ANIMADO E INTERATIVO)
+# 🌐 VISÃO PÚBLICA (PORTAL PREMIUM TOTALMENTE INTERATIVO)
 # =========================================================================
 if not st.session_state.autenticado:
     
-    # Injeção Física do Mascote Flutuante e Altamente Interativo ao Mouse
+    # Injeção Física Inviolável do Mascote EagleBot no Canto Direito
     st.markdown("""
     <div class="eagle-widget-fixed">
-        <div id="widget-bubble" class="widget-bubble-live">
-            🦅 <b>EagleBot:</b> Passe o mouse em mim para ver minhas dicas de score! 
+        <div class="widget-bubble-live">
+            🦅 <b>EagleBot:</b> Estou ativo! Passe o mouse em mim para alinhar as dicas do dia.
         </div>
         <div class="eagle-avatar-live">🦅</div>
     </div>
@@ -324,17 +314,16 @@ if not st.session_state.autenticado:
     with col_hist2:
         st.write("A **Brothers Network Finance** é formada por especialistas focados em direito bancário e mercado financeiro. Nosso propósito diário é quebrar as amarras burocráticas injustas dos bancos para que você recupere sua tranquilidade comercial de forma definitiva.")
 
-    # DEPOIMENTOS EM CARDS PREMIUM ANIMADOS
+    # DEPOIMENTOS
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>Pessoas Reais, Resultados Reais</h2>", unsafe_allow_html=True)
-    st.write("\n")
     col_dep1, col_dep2, col_dep3 = st.columns(3)
     with col_dep1:
-        st.markdown("<div class='bloco-premium'><blockquote><b>\"Tentei financiar um caminhão e recusaram. Em 10 dias a Brothers resolveu meu score juridicamente.\"</b></blockquote><br><small>— Ricardo M., Empresário</small></div>", unsafe_allow_html=True)
+        st.markdown("<div style='background:#161622; padding:20px; border-radius:8px;'><blockquote><b>\"Tentei financiar um caminhão e recusaram. Em 10 dias a Brothers resolveu meu score.\"</b></blockquote><br><small>— Ricardo M., Empresário</small></div>", unsafe_allow_html=True)
     with col_dep2:
-        st.markdown("<div class='bloco-premium'><blockquote><b>\"Eles limparam meu histórico de consultas antigas e hoje tenho crédito aprovado em 3 bancos.\"</b></blockquote><br><small>— Dra. Amanda V., Médica</small></div>", unsafe_allow_html=True)
+        st.markdown("<div style='background:#161622; padding:20px; border-radius:8px;'><blockquote><b>\"Eles limparam meu histórico de consultas antigas e hoje tenho crédito aprovado.\"</b></blockquote><br><small>— Dra. Amanda V., Médica</small></div>", unsafe_allow_html=True)
     with col_dep3:
-        st.markdown("<div class='bloco-premium'><blockquote><b>\"Atendimento sério, transparente e muito rápido. Devolve a paz de espírito comercial.\"</b></blockquote><br><small>— Carlos H., Autônomo</small></div>", unsafe_allow_html=True)
+        st.markdown("<div style='background:#161622; padding:20px; border-radius:8px;'><blockquote><b>\"Atendimento sério, transparente e muito rápido. Devolve a paz de espírito.\"</b></blockquote><br><small>— Carlos H., Autônomo</small></div>", unsafe_allow_html=True)
 
     # FAQ
     st.markdown("---")
@@ -353,7 +342,7 @@ if not st.session_state.autenticado:
             with col_artigo:
                 st.markdown(f"🏷️ `{post['Categoria']}` | 📅 *Publicado em {post['Data']}*")
                 st.markdown(f"### {post['Titulo']}")
-                resumo_limpo = post['Conteudo'].replace("<p>", "").replace("</p>", "").replace("<br>", " ")[:180] + "..."
+                resumo_limpo = post['Content'].replace("<p>", "").replace("</p>", "").replace("<br>", " ")[:180] + "..."
                 st.markdown(resumo_limpo, unsafe_allow_html=True)
                 
                 if st.button("📖 Ler Artigo Didático Completo", key=f"pub_btn_{post['id']}"):
@@ -361,12 +350,12 @@ if not st.session_state.autenticado:
                     def render_dialog():
                         st.markdown(f"✍️ *Por {post['Autor']} em {post['Data']}*")
                         st.markdown("<hr>", unsafe_allow_html=True)
-                        st.markdown(post['Conteudo'], unsafe_allow_html=True)
+                        st.markdown(post['Content'], unsafe_allow_html=True)
                     render_dialog()
             st.markdown("<br><hr style='border-top: 1px solid #222;'><br>", unsafe_allow_html=True)
 
 # =========================================================================
-# 📊 VISÃO PRIVADA (100% INTACTA E PROTEGIDA CONTRA ERROS)
+# 📊 VISÃO PRIVADA (CRM INTERNO INTACTO)
 # =========================================================================
 else:
     st.title("🦅 Central Administrativa Master - Brothers Network")
