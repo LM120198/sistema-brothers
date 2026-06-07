@@ -3,13 +3,13 @@ import pandas as pd
 import datetime
 import calendar
 import sqlite3
+import urllib.parse
 
 # Configuração da página com layout amplo
 st.set_page_config(page_title="Brothers Network Finance - Sistema Master", layout="wide")
 
 # --- SISTEMA DE LOGIN E SEGURANÇA ---
 def verificar_login():
-    """Cria uma tela de bloqueio e só libera o sistema se a senha estiver correta"""
     if "autenticado" not in st.session_state:
         st.session_state.autenticado = False
 
@@ -25,7 +25,6 @@ def verificar_login():
                 botao_login = st.form_submit_button("Entrar no Sistema")
                 
                 if botao_login:
-                    # Aqui ficam o usuário e senha padrão definidos para o teste
                     if usuario == "admin" and senha == "brothers2026":
                         st.session_state.autenticado = True
                         st.success("Acesso liberado!")
@@ -45,14 +44,12 @@ def conectar_banco():
             Nome TEXT, WhatsApp TEXT, Data_Nascimento TEXT, Mensagem TEXT,
             Dia_Aniv INTEGER, Mes_Aniv INTEGER,
             T1_BoasVindas TEXT, T2_AnaliseCredito TEXT, T3_GatilhoOferta TEXT,
-            T4_MsgWhats TEXT, T5_PosVenda TEXT, T6_Fidelizacao TEXT,
-            T7_Networking TEXT, T8_Upgrade TEXT, T9_Fechamento TEXT, T10_Arquivo TEXT
+            T4_MsgWhats TEXT, T5_PosVenda TEXT
         )
     """)
     conn.commit()
     return conn
 
-# Inicializa o banco de dados
 conectar_banco()
 
 def carregar_dados():
@@ -68,9 +65,8 @@ def salvar_membro(nome, whats, data_nasci, msg):
     cursor.execute("""
         INSERT INTO membros (
             Nome, WhatsApp, Data_Nascimento, Mensagem, Dia_Aniv, Mes_Aniv,
-            T1_BoasVindas, T2_AnaliseCredito, T3_GatilhoOferta, T4_MsgWhats, T5_PosVenda,
-            T6_Fidelizacao, T7_Networking, T8_Upgrade, T9_Fechamento, T10_Arquivo
-        ) VALUES (?, ?, ?, ?, ?, ?, 'Pendente', 'Pendente', 'Pendente', 'Pendente', 'Pendente', 'Pendente', 'Pendente', 'Pendente', 'Pendente', 'Pendente')
+            T1_BoasVindas, T2_AnaliseCredito, T3_GatilhoOferta, T4_MsgWhats, T5_PosVenda
+        ) VALUES (?, ?, ?, ?, ?, ?, 'Pendente', 'Pendente', 'Pendente', 'Pendente', 'Pendente')
     """, (nome, whats, str(data_nasci), msg, dt.day, dt.month))
     conn.commit()
     conn.close()
@@ -87,23 +83,20 @@ def atualizar_status(df_editado):
     conn.commit()
     conn.close()
 
-# --- SÓ RODA O SISTEMA SE O LOGIN FOR SUCESSO ---
+# --- EXECUÇÃO DO SISTEMA ---
 if verificar_login():
     
-    # Botão de Logout no topo da barra lateral
     if st.sidebar.button("🔒 Sair do Sistema (Logout)"):
         st.session_state.autenticado = False
         st.rerun()
 
-    # Interface Principal
     st.title("🦅 Brothers Network Finance Community")
     st.subheader("Sistema Master de Gestão, Calendário e Secretária Eletrônica")
 
     aba1, aba2, aba3 = st.tabs(["🌐 1. Landing Page (Captura)", "📅 2. Calendário Mensal Expandido", "📊 3. Central da Secretária (Tarefas)"])
-
     membros_db = carregar_dados()
 
-    # --- ABA 1: LANDING PAGE DE CAPTURA ---
+    # --- ABA 1: CAPTURA ---
     with aba1:
         st.header("Cadastro de Membros & Solicitação de Atendimento")
         st.markdown("---")
@@ -121,22 +114,22 @@ if verificar_login():
                 
                 if botao_enviar:
                     if nome and whatsapp:
-                        salvar_membro(nome, whatsapp, data_nascimento, msg=mensagem)
-                        st.success(f"Olá {nome}, seus dados foram recebidos com sucesso no banco de dados!")
+                        salvar_membro(nome, whatsapp, data_nascimento, mensagem)
+                        st.success(f"Olá {nome}, seus dados foram enviados!")
                         st.rerun()
                     else:
-                        st.error("Por favor, preencha Nome e WhatsApp obrigatoriamente.")
+                        st.error("Por favor, preencha Nome e WhatsApp.")
 
         with col_lp2:
             st.markdown("### 📈 Benefícios da Comunidade")
-            st.info("**Restauração de Crédito:** Atuação ágil via liminar judicial para limpar seu histórico.")
-            st.info("**Networking de Elite:** Conexão direta com investidores e empresários do mercado financeiro.")
+            st.info("**Restauração de Crédito:** Atuação ágil via liminar judicial.")
+            st.info("**Networking de Elite:** Conexão direta com o mercado financeiro.")
 
-    # --- ABA 2: CALENDÁRIO MENSAL EXPANDIDO ---
+    # --- ABA 2: CALENDÁRIO (CORRIGIDO) ---
     with aba2:
         st.header("Calendário Mensal de Relacionamento")
         hoje = datetime.date.today()
-        mes_selecionado = st.selectbox("Selecione o Mês de Análise:", list(range(1, 13)), index=hoje.month - 1, format_func=lambda x: calendar.month_name[x].upper())
+        mes_selecionado = st.selectbox("Selecione o Mês:", list(range(1, 13)), index=hoje.month - 1, format_func=lambda x: calendar.month_name[x].upper())
         
         cal = calendar.monthcalendar(hoje.year, mes_selecionado)
         nomes_dias = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
@@ -146,6 +139,7 @@ if verificar_login():
             cols_dias[i].markdown(f"<p style='text-align:center; font-weight:bold; color:#1F497D;'>{nome_dia}</p>", unsafe_allow_html=True)
             
         for semana in cal:
+            st.markdown("<div style='margin-bottom: 5px;'></div>", unsafe_allow_html=True)
             cols_semana = st.columns(7)
             for i, dia in enumerate(semana):
                 if dia == 0:
@@ -153,43 +147,54 @@ if verificar_login():
                 else:
                     df_dia = membros_db[(membros_db["Dia_Aniv"] == dia) & (membros_db["Mes_Aniv"] == mes_selecionado)] if not membros_db.empty else pd.DataFrame()
                     box_html = f"""
-                    <div style="border:1px solid #D9D9D9; padding:8px; border-radius:5px; min-height:140px; background-color:#FFFFFF;">
+                    <div style="border:1px solid #D9D9D9; padding:8px; border-radius:5px; min-height:140px; background-color:#FFFFFF; color: #000000;">
                         <strong style="color:#4F81BD; font-size:14px;">{dia}</strong>
                     """
                     if not df_dia.empty:
                         for idx, row in df_dia.iterrows():
                             box_html += f"""
-                            <div style="background-color:#F2F5F8; margin-top:4px; padding:4px; border-radius:3px; font-size:11px;">
+                            <div style="background-color:#F2F5F8; margin-top:4px; padding:4px; border-radius:3px; font-size:11px; color: #333333;">
                                 🎂 <b>{row['Nome'].split()[0]}</b><br>
                                 🟢 <i>Whats: {row['T4_MsgWhats']}</i>
                             </div>
                             """
                     box_html += "</div>"
+                    # CRUCIAL: Aqui adicionamos o unsafe_allow_html=True para corrigir o bug do print anterior
                     cols_semana[i].markdown(box_html, unsafe_allow_html=True)
 
-    # --- ABA 3: CENTRAL DA SECRETÁRIA ---
+    # --- ABA 3: GESTÃO COM BOTÃO DO WHATSAPP ---
     with aba3:
         st.header("Gerenciador de Tarefas e Disparos")
         if membros_db.empty:
-            st.warning("Nenhum membro cadastrado na Landing Page ainda.")
+            st.warning("Nenhum membro cadastrado ainda.")
         else:
+            # Gerando os links de API do WhatsApp direto para cada cliente
+            links_whats = []
+            for idx, row in membros_db.iterrows():
+                msg_formatada = urllib.parse.quote(f"Olá {row['Nome']}, tudo bem? Sou da central Brothers Network Finance. Vi sua mensagem sobre: '{row['Mensagem']}'. Vamos dar andamento ao seu atendimento?")
+                links_whats.append(f"https://api.whatsapp.com/send?phone={row['WhatsApp']}&text={msg_formatada}")
+            
+            membros_db["Abrir Atendimento"] = links_whats
+
             df_editado = st.data_editor(
                 membros_db,
                 column_config={
-                    "id": None,  # Esconde a coluna ID do banco para ficar limpo
+                    "id": None,
                     "Nome": st.column_config.TextColumn("Membro", disabled=True),
                     "WhatsApp": st.column_config.TextColumn("WhatsApp", disabled=True),
                     "Data_Nascimento": st.column_config.DateColumn("Nascimento", disabled=True),
                     "Mensagem": st.column_config.TextColumn("Mensagem Solicitada", disabled=True),
+                    "Dia_Aniv": None, "Mes_Aniv": None, # Oculta colunas de controle internas
                     "T1_BoasVindas": st.column_config.SelectboxColumn("T1: Boas-Vindas", options=["Pendente", "Concluído"]),
                     "T2_AnaliseCredito": st.column_config.SelectboxColumn("T2: Análise Liminar", options=["Pendente", "Concluído"]),
                     "T3_GatilhoOferta": st.column_config.SelectboxColumn("T3: Oferta", options=["Pendente", "Concluído"]),
                     "T4_MsgWhats": st.column_config.SelectboxColumn("T4: Whats Aniv.", options=["Pendente", "Concluído"]),
                     "T5_PosVenda": st.column_config.SelectboxColumn("T5: Pós-Venda", options=["Pendente", "Concluído"]),
+                    "Abrir Atendimento": st.column_config.LinkColumn("💬 Chamar no WhatsApp", display_text="Chamar agora")
                 },
                 hide_index=True
             )
             if st.button("Salvar Alterações de Status"):
                 atualizar_status(df_editado)
-                st.success("Painel de Controle e Banco de Dados atualizados com sucesso!")
+                st.success("Status salvos com sucesso!")
                 st.rerun()
