@@ -81,14 +81,14 @@ def salvar_membro(nome, whats, data_nasci, msg):
     conn.commit()
     conn.close()
 
-def salvar_post(titulo, autor, category, conteudo, url_img):
+def salvar_post(titulo, autor, categoria, conteudo, url_img):
     data_atual = datetime.date.today().strftime("%d/%m/%Y")
     conn = sqlite3.connect("brothers.db")
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO blog (Titulo, Autor, Data, Categoria, Conteudo, Imagem_Url)
         VALUES (?, ?, ?, ?, ?, ?)
-    """, (titulo, autor, data_atual, category, conteudo, url_img))
+    """, (titulo, autor, data_atual, categoria, conteudo, url_img))
     conn.commit()
     conn.close()
 
@@ -104,127 +104,114 @@ def atualizar_status(df_editado):
     conn.commit()
     conn.close()
 
-# --- ENGINE VISUAL: CSS DAS ANIMAÇÕES E DO BALÃO DE DIÁLOGO ---
+# --- ENGINE VISUAL: MASCOTE FLUTUANTE QUE ACOMPANHA A TELA ---
 st.markdown("""
 <style>
-    /* Layout Base */
-    .stApp {
-        background-color: #0e0e12;
-    }
+    .stApp { background-color: #0e0e12; }
     
-    /* Estrutura do Mascote Flutuante */
-    .eagle-holder {
+    /* Widget Fixo do Mascote no Canto da Tela */
+    .eagle-widget-container {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        z-index: 999999;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        position: relative;
+        pointer-events: none;
     }
     
-    .eagle-avatar {
-        font-size: 4rem;
+    .eagle-avatar-fixed {
+        font-size: 3.8rem;
         user-select: none;
-        display: inline-block;
-        transition: transform 0.2s ease;
+        pointer-events: auto;
+        cursor: pointer;
+        transition: transform 0.3s ease;
     }
     
-    /* Animação Física de Flutuar Contínuo */
-    .float-animation {
-        animation: eagleFloat 3s ease-in-out infinite;
+    /* Animação de Voar Suave (Flutuação) */
+    .wing-flap-animation {
+        animation: eagleFlap 2.5s ease-in-out infinite;
     }
-    @keyframes eagleFloat {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-12px); }
-        100% { transform: translateY(0px); }
+    @keyframes eagleFlap {
+        0% { transform: translateY(0px) scaleX(1); }
+        50% { transform: translateY(-15px) scaleX(1.05); filter: drop-shadow(0 0 8px rgba(255,215,0,0.5)); }
+        100% { transform: translateY(0px) scaleX(1); }
     }
     
-    /* Animação de Pulo quando o robô fala */
-    .bounce-animation {
-        animation: eagleBounce 0.6s ease;
-    }
-    @keyframes eagleBounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-25px); }
-    }
-
-    /* Balão de Fala do Mascote (Estilo Inteligente) */
-    .speech-bubble {
-        position: relative;
-        background: #1a1a24;
-        border: 1px solid #FFD700;
-        border-radius: 8px;
+    /* Balão de Diálogo Dinâmico do Canto */
+    .widget-speech-bubble {
+        background: #161622;
+        border: 2px solid #FFD700;
+        border-radius: 12px;
         padding: 12px;
         color: #fff;
         font-size: 13px;
         text-align: center;
-        width: 180px;
-        margin-bottom: 15px;
-        box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
-        transition: all 0.3s ease;
-    }
-    .speech-bubble:after {
-        content: '';
-        position: absolute;
-        bottom: -10px;
-        left: 50%;
-        margin-left: -10px;
-        border-width: 10px 10px 0;
-        border-style: solid;
-        border-color: #1a1a24 transparent;
-        display: block;
-        width: 0;
+        width: 220px;
+        margin-bottom: 12px;
+        box-shadow: 0px 8px 24px rgba(0,0,0,0.5);
+        pointer-events: auto;
+        opacity: 1;
+        transition: opacity 0.4s ease;
     }
 </style>
 
-<!-- SCRIPT DE INTELIGÊNCIA INTERATIVA (JAVASCRIPT SEGURO) -->
 <script>
-    let tempoInativo;
+    let widgetTimer;
     
-    function resetTimer() {
-        clearTimeout(tempoInativo);
-        // Se o cliente se mexer, o mascote volta a ficar calmo e focado
-        let bubble = parent.document.getElementById("bot-bubble");
-        let avatar = parent.document.getElementById("bot-avatar");
-        if(bubble && bubble.innerText.includes("parado")) {
-            bubble.innerHTML = "🦅 <b>EagleBot:</b> Estou monitorando seu perfil. Prossiga!";
-            avatar.classList.remove("bounce-animation");
-            avatar.classList.add("float-animation");
+    function monitorarAtividade() {
+        clearTimeout(widgetTimer);
+        let bubble = parent.document.getElementById("widget-bubble");
+        
+        // Retorna ao estado padrão de monitoramento caso o usuário se mexa
+        if (bubble && bubble.innerText.includes("travou")) {
+            bubble.innerHTML = "🦅 <b>EagleBot:</b> Estou acompanhando sua navegação. Se precisar de ajuda, preencha a ficha ao lado!";
         }
-        // Dispara o alerta se ficar 15 segundos sem tocar em nada
-        tempoInativo = setTimeout(dispararAlertaInatividade, 15000);
+        
+        widgetTimer = setTimeout(dispararFalaMascote, 12000);
     }
     
-    function dispararAlertaInatividade() {
-        let bubble = parent.document.getElementById("bot-bubble");
-        let avatar = parent.document.getElementById("bot-avatar");
-        if(bubble && avatar) {
-            // Mudança de comportamento física e textual
-            bubble.innerHTML = "⚠️ <b>EagleBot:</b> Ei! Você travou aí? Não perca tempo, use o termômetro ao lado e garanta sua vaga na Brothers!";
-            avatar.classList.remove("float-animation");
-            avatar.classList.add("bounce-animation");
+    function dispararFalaMascote() {
+        let bubble = parent.document.getElementById("widget-bubble");
+        if (bubble) {
+            bubble.innerHTML = "⚠️ <b>EagleBot:</b> Você parou para ler nossas dicas? Lembre-se: nosso formulário de restauração de crédito leva menos de 1 minuto para preencher!";
         }
     }
     
-    // Monitora cliques, movimentos do mouse e rolagens na tela do cliente
-    window.onload = resetTimer;
-    window.onmousemove = resetTimer;
-    window.onmousedown = resetTimer;
-    window.ontouchstart = resetTimer;
-    window.onclick = resetTimer;
-    window.onkeydown = resetTimer;
-    window.addEventListener('scroll', resetTimer, true);
+    // Vincula os eventos do navegador do cliente de forma estável
+    window.addEventListener('mousemove', monitorarAtividade);
+    window.addEventListener('scroll', monitorarAtividade, true);
+    window.addEventListener('keydown', monitorarAtividade);
 </script>
 """, unsafe_allow_html=True)
 
-# --- CONTROLE DE ACESSO ---
+# --- INICIALIZAÇÃO AUTOMÁTICA DO BLOG SE ESTIVER VAZIO ---
+def inicializar_conteudo_blog():
+    conn = sqlite3.connect("brothers.db")
+    cursor = conn.cursor()
+    if cursor.execute("SELECT COUNT(*) FROM blog").fetchone()[0] == 0:
+        posts_iniciais = [
+            (
+                "Como o Banco Analisa Seu Perfil Quando Você Pede um Empréstimo?",
+                "Lucas - Central Brothers", "Dicas Práticas",
+                "Muitas pessoas pagam suas contas em dia, mas continuam recebendo respostas negativas ao tentar um financiamento. O motivo real está nas consultas em massa que as lojas fazem no seu CPF, derrubando o score interno do mercado de forma injusta. Para corrigir isso e forçar os bancos a liberarem crédito limpo, nossa equipe atua direto na raiz do problema removendo esses rastros de forma definitiva.",
+                "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=60"
+            )
+        ]
+        cursor.executemany("INSERT INTO blog (Titulo, Autor, Categoria, Conteudo, Imagem_Url, Data) VALUES (?, ?, ?, ?, ?, '06/06/2026')", posts_iniciais)
+        conn.commit()
+    conn.close()
+
+inicializar_conteudo_blog()
+
+# --- ABA DE LOGIN ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
 st.sidebar.title("🦅 Área Restrita")
 if not st.session_state.autenticado:
     with st.sidebar.form("login_form"):
-        st.markdown("<div style='text-align:center; font-size:2.5rem;'>🦅</div>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; color:#FFD700; margin-top:0;'><b>Área Restrita dos Sócios</b></p>", unsafe_allow_html=True)
         usuario = st.text_input("Usuário:")
         senha = st.text_input("Senha:", type="password")
         if st.form_submit_button("Acessar Painel"):
@@ -239,30 +226,28 @@ else:
         st.session_state.autenticado = False
         st.rerun()
 
+# CARREGAMENTO DOS DADOS COMPARTILHADOS
 membros_db = carregar_dados()
 blog_db = carregar_posts()
 
 # =========================================================================
-# 🌐 VISÃO PÚBLICA: MASCOTE TOTALMENTE INTERATIVO E RESPONSIVO
+# 🌐 VISÃO PÚBLICA (PORTAL INSTITUCIONAL COM PET FIXO E ACESSÍVEL)
 # =========================================================================
 if not st.session_state.autenticado:
     
-    # Layout Superior: Portal + Mascote Reativo
-    col_h1, col_h2 = st.columns([4, 1.2])
-    with col_h1:
-        st.markdown("<h1 style='color: #FFD700; font-size: 3.5rem; font-weight: 800; margin-bottom:0;'>BROTHERS NETWORK FINANCE</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #FFFFFF; font-size: 1.3rem; font-weight: 300;'>Seu Nome Limpo de Verdade, Score Alto e Entrada nos Melhores Créditos do País</p>", unsafe_allow_html=True)
-    with col_h2:
-        # Renderização das IDs que o JavaScript usa para controlar o comportamento do pet
-        st.markdown("""
-        <div class="eagle-holder">
-            <div id="bot-bubble" class="speech-bubble">
-                🦅 <b>EagleBot:</b> Seja bem-vindo! Pronto para destravar sua vida financeira?
-            </div>
-            <div id="bot-avatar" class="eagle-avatar float-animation">🦅</div>
+    # Injeção Física do Mascote Flutuante que acompanha o Scroll da tela
+    st.markdown("""
+    <div class="eagle-widget-container">
+        <div id="widget-bubble" class="widget-speech-bubble">
+            🦅 <b>EagleBot:</b> Olá! Sou o assistente da Brothers Network. Estou aqui para guiar você rumo ao topo financeiro.
         </div>
-        """, unsafe_allow_html=True)
-        
+        <div id="widget-avatar" class="eagle-avatar-fixed wing-flap-animation">🦅</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<h1 style='color: #FFD700; font-size: 3.5rem; font-weight: 800; margin-bottom:0;'>BROTHERS NETWORK FINANCE</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #FFFFFF; font-size: 1.3rem; font-weight: 300;'>Seu Nome Limpo, Score Alto e Acesso às Melhores Linhas de Crédito do País</p>", unsafe_allow_html=True)
+    
     st.image("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&auto=format&fit=crop&q=80", use_container_width=True)
     st.write("\n")
     
@@ -271,9 +256,8 @@ if not st.session_state.autenticado:
     
     with col_info:
         st.markdown("## 🏢 Como Nós Ajudamos Você e Sua Empresa")
-        st.write("Estar com as portas do banco fechadas impede você de evoluir. Nosso time remove os rastros e consultas antigas que detonam seu perfil de forma justa, rápida e sem complicação.")
+        st.write("Estar com as portas do banco fechadas impede você de evoluir profissionalmente. Nosso time remove os rastros e consultas antigas que detonam seu perfil de forma justa, rápida e sem complicação.")
         
-        # Termômetro Interativo
         st.markdown("### 📊 Teste Seu Score Abaixo:")
         score_usuario = st.slider("Selecione seu Score aproximado:", min_value=0, max_value=1000, value=350, step=10)
         
@@ -290,13 +274,13 @@ if not st.session_state.autenticado:
         st.markdown("---")
         st.write("• **Limpamos Seu Passado:** Retiramos apontamentos negativos do seu histórico definitivamente.")
         st.write("• **Agilidade Máxima:** Atuação focada em ordens urgentes do juiz.")
-        st.warning("⚠️ **Vagas Limitadas:** Atendimentos restritos semanalmente para manter a velocidade dos processos.")
+        st.warning("⚠️ **Vagas Limitadas:** Atendimentos restritos semanalmente para manter a velocidade.")
         
     with col_form:
         st.markdown("### 🦅 Solicite Uma Análise Gratuita do Seu Caso")
         with st.form("form_portal", clear_on_submit=True):
             nome = st.text_input("Seu Nome Completo ou Razão Social:")
-            whatsapp = st.text_input("WhatsApp com DDD (Ex: 11948086926):", placeholder="Somente números")
+            whatsapp = st.text_input("WhatsApp com DDD (Somente números):", placeholder="Ex: 11948086926")
             data_nascimento = st.date_input("Data de Nascimento ou Fundação:", min_value=datetime.date(1940, 1, 1))
             servico = st.selectbox("Qual o maior problema hoje?", ["Quero Limpar meu Nome / Subir meu Score Urgente", "Preciso de Empréstimo com Juros Baixos", "Quero Investimentos Lucrativos", "Quero Networking na Comunidade"])
             detalhes = st.text_area("Conte resumidamente o que aconteceu:")
@@ -305,7 +289,7 @@ if not st.session_state.autenticado:
                 if nome and whatsapp:
                     msg_completa = f"Perfil: {perfil_score} (Score: {score_usuario}) | Alvo: {servico} | Obs: {detalhes}"
                     salvar_membro(nome, whatsapp, data_nascimento, msg_completa)
-                    st.success(f"🔥 Perfeito, {nome}! Seus dados foram guardados e a triagem começou.")
+                    st.success(f"🔥 Perfeito, {nome}! Triagem iniciada com sucesso.")
                     st.rerun()
                 else:
                     st.error("Nome e WhatsApp são obrigatórios.")
@@ -339,7 +323,7 @@ if not st.session_state.autenticado:
     with st.expander("Eu vou ter que pagar alguma coisa antes do meu processo iniciar?"):
         st.write("Nossa análise inicial é 100% gratuita via WhatsApp. Só fechamos após mostrar o que está travando o seu perfil.")
 
-    # BLOG
+    # SEÇÃO DO BLOG COM O SISTEMA LEIA MAIS REPARADO
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>📰 Dicas da Nossa Equipe - Aprenda a Cuidar do Seu Crédito</h2>", unsafe_allow_html=True)
     if not blog_db.empty:
@@ -363,7 +347,7 @@ if not st.session_state.autenticado:
             st.markdown("<br><hr style='border-top: 1px solid #222;'><br>", unsafe_allow_html=True)
 
 # =========================================================================
-# 📊 VISÃO PRIVADA (CRM INTERNO PROTEGIDO)
+# 📊 VISÃO PRIVADA (CRM INTERNO INTACTO)
 # =========================================================================
 else:
     st.title("🦅 Central Administrativa Master - Brothers Network")
@@ -442,14 +426,11 @@ else:
 
     with aba_novo_blog:
         st.subheader("✍️ Criador de Conteúdo Livre")
-        st.markdown("Cole o seu texto livremente. Se quiser dar formato em partes específicas, use HTML direto no campo:")
-        st.code("Exemplos:\n<b>Texto em Negrito</b>\n<i>Texto em Itálico</i>\n<span style='color: gold;'>Texto Dourado</span>")
-        
         b_titulo = st.text_input("Título da Postagem:")
         b_autor = st.text_input("Autor da Publicação:", value="Lucas - Central Brothers")
         b_cat = st.selectbox("Categoria Operacional:", ["Dicas Práticas", "Inteligência Financeira", "Passo a Passo", "Novidades do Hub"])
         b_img = st.text_input("URL da Imagem de Destaque:")
-        b_conteudo = st.text_area("Escreva aqui o artigo completo com as tags que desejar:", height=300)
+        b_conteudo = st.text_area("Escreva aqui o artigo completo:", height=300)
         
         if st.button("💥 ENVIAR E PUBLICAR ARTIGO IMEDIATAMENTE", type="primary"):
             if b_titulo and b_conteudo:
