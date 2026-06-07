@@ -104,88 +104,70 @@ def atualizar_status(df_editado):
     conn.commit()
     conn.close()
 
-# --- ALIMENTAÇÃO INICIAL DO BLOG ---
-def inicializar_conteudo_blog():
-    conn = sqlite3.connect("brothers.db")
-    cursor = conn.cursor()
-    if cursor.execute("SELECT COUNT(*) FROM blog").fetchone()[0] == 0:
-        posts_iniciais = [
-            (
-                "Como o Banco Analisa Seu Perfil Quando Você Pede um Empréstimo?",
-                "Lucas - Central Brothers", "Dicas Práticas",
-                "Muitas pessoas pagam suas contas em dia, mas continuam recebendo respostas negativas ao tentar um financiamento. O motivo real está nas consultas em massa que as lojas fazem no seu CPF, derrubando o score interno do mercado de forma injusta. Para corrigir isso e forçar os bancos a liberarem crédito limpo, nossa equipe atua direto na raiz do problema removendo esses rastros de forma definitiva.",
-                "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=60"
-            )
-        ]
-        cursor.executemany("INSERT INTO blog (Titulo, Autor, Categoria, Conteudo, Imagem_Url, Data) VALUES (?, ?, ?, ?, ?, '06/06/2026')", posts_iniciais)
-        conn.commit()
-    conn.close()
-
-inicializar_conteudo_blog()
-
-# --- ARQUIVO CENTRAL DE ESTILO, INTRO ANIMADA E MASCOTE FIXED ---
+# --- ARQUIVO CENTRAL DE ESTILO, ANIMAÇÕES E INTERATIVIDADE GLOBAL ---
 st.markdown("""
 <style>
-    .stApp { background-color: #0e0e12; }
+    /* Força o plano de fundo escuro no Streamlit inteiro */
+    .stApp, body, [data-testid="stAppViewContainer"] { 
+        background-color: #0e0e12 !important; 
+    }
 
-    /* --- TELA DE INTRODUÇÃO TRIUNFAL (FINANCE ANIMATION) --- */
-    @keyframes fadeOutIntro {
-        0% { opacity: 1; visibility: visible; }
-        90% { opacity: 1; }
-        100% { opacity: 0; visibility: hidden; }
+    /* --- CORTINA DE INTRODUÇÃO ABSOLUTA (FULL SCREEN 100VW) --- */
+    @keyframes recolherCortina {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-100vh); display: none; visibility: hidden; }
     }
-    @keyframes logoPulse {
-        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px #FFD700); }
-        50% { transform: scale(1.05); filter: drop-shadow(0 0 25px #FFD700); }
+    @keyframes neonPulse {
+        0%, 100% { filter: drop-shadow(0 0 10px #FFD700) drop-shadow(0 0 20px #FFD700); transform: scale(1); }
+        50% { filter: drop-shadow(0 0 30px #FFD700) drop-shadow(0 0 50px #FFD700); transform: scale(1.05); }
     }
-    
-    #intro-screen {
+    @keyframes typingEffect {
+        from { width: 0; }
+        to { width: 100%; }
+    }
+
+    #cortina-intro {
         position: fixed !important;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        background-color: #07070a;
-        background-image: linear-gradient(rgba(255, 215, 0, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 215, 0, 0.02) 1px, transparent 1px);
-        background-size: 30px 30px;
+        top: 0 !important; left: 0 !important;
+        width: 100vw !important; height: 100vh !important;
+        background-color: #050508 !important;
         z-index: 9999999 !important;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        animation: fadeOutIntro 2.5s ease forwards;
-        pointer-events: none;
-    }
-    
-    .intro-logo {
-        color: #FFD700;
-        font-size: 3rem;
-        font-weight: 900;
-        letter-spacing: 4px;
-        animation: logoPulse 1.5s ease-in-out infinite;
-        text-align: center;
-    }
-    
-    .intro-sub {
-        color: #ffffff;
-        font-size: 1rem;
-        letter-spacing: 2px;
-        margin-top: 10px;
-        opacity: 0.8;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        animation: recolherCortina 0.8s cubic-bezier(0.77, 0, 0.175, 1) forwards !important;
+        animation-delay: 3.8s !important;
+        pointer-events: none !important;
     }
 
-    /* Animação de Entrada do Site Pós-Intro */
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(15px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    div[data-testid="stVerticalBlock"] > div {
-        animation: fadeInUp 0.8s cubic-bezier(0.25, 1, 0.5, 1) both;
+    .aguia-gigante {
+        font-size: 8rem !important;
+        animation: neonPulse 2s ease-in-out infinite !important;
+        margin-bottom: 20px !important;
+        user-select: none !important;
     }
 
-    /* --- FIXAÇÃO ABSOLUTA DO EAGLEBOT CONTRA SUMIÇOS --- */
+    .texto-datilografado {
+        color: #FFD700 !important;
+        font-size: 2.2rem !important;
+        font-weight: 900 !important;
+        letter-spacing: 5px !important;
+        overflow: hidden !important;
+        white-space: nowrap !important;
+        border-right: 3px solid #FFD700 !important;
+        width: 0;
+        animation: typingEffect 2.2s steps(30, end) forwards !important;
+        animation-delay: 0.5s !important;
+        text-align: center !important;
+    }
+
+    /* --- ENGENHARIA REFEITA DO EAGLEBOT FLUTUANTE (ANTI-OCULTAÇÃO) --- */
     .eagle-widget-fixed {
         position: fixed !important;
-        bottom: 35px !important;
-        right: 35px !important;
-        z-index: 999999 !important;
+        bottom: 30px !important;
+        right: 30px !important;
+        z-index: 9999998 !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
@@ -201,7 +183,7 @@ st.markdown("""
         text-align: center !important;
         width: 220px !important;
         margin-bottom: 15px !important;
-        box-shadow: 0px 8px 24px rgba(0,0,0,0.7) !important;
+        box-shadow: 0px 8px 24px rgba(0,0,0,0.8) !important;
         transition: all 0.3s ease !important;
     }
     .eagle-avatar-live {
@@ -224,10 +206,10 @@ st.markdown("""
     }
 </style>
 
-<!-- Injeção Estrutural da Tela de Intro -->
-<div id="intro-screen">
-    <div class="intro-logo">🦅 BROTHERS FINANCE</div>
-    <div class="intro-sub">CONECTANDO SISTEMAS...</div>
+<!-- Injeção da Cortina Teatral de Abertura -->
+<div id="cortina-intro">
+    <div class="aguia-gigante">🦅</div>
+    <div class="texto-datilografado">BROTHERS NETWORK FINANCE</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -256,15 +238,15 @@ membros_db = carregar_dados()
 blog_db = carregar_posts()
 
 # =========================================================================
-# 🌐 VISÃO PÚBLICA (PORTAL PREMIUM TOTALMENTE ANIMADO E INTERATIVO)
+# 🌐 VISÃO PÚBLICA (PORTAL PREMIUM TOTALMENTE INTERATIVO)
 # =========================================================================
 if not st.session_state.autenticado:
     
-    # Injeção Física Inviolável do Mascote EagleBot no Canto Direito
+    # Renderização Forçada do Mascote EagleBot no Canto Direito
     st.markdown("""
     <div class="eagle-widget-fixed">
         <div class="widget-bubble-live">
-            🦅 <b>EagleBot:</b> Estou ativo! Passe o mouse em mim para alinhar as dicas do dia.
+            🦅 <b>EagleBot:</b> Estou ativo! Passe o mouse em mim para ver as novidades e dicas de score.
         </div>
         <div class="eagle-avatar-live">🦅</div>
     </div>
@@ -306,7 +288,7 @@ if not st.session_state.autenticado:
         st.markdown("### 🦅 Solicite Uma Análise Gratuita do Seu Caso")
         with st.form("form_portal", clear_on_submit=True):
             nome = st.text_input("Seu Nome Completo ou Razão Social:")
-            whatsapp = st.text_input("WhatsApp com DDD (Somente numbers):", placeholder="Ex: 11948086926")
+            whatsapp = st.text_input("WhatsApp com DDD (Somente números):", placeholder="Ex: 11948086926")
             data_nascimento = st.date_input("Data de Nascimento ou Fundação:", min_value=datetime.date(1940, 1, 1))
             servico = st.selectbox("Qual o maior problema hoje?", ["Quero Limpar meu Nome / Subir meu Score Urgente", "Preciso de Empréstimo com Juros Baixos", "Quero Investimentos Lucrativos", "Quero Networking na Comunidade"])
             detalhes = st.text_area("Conte resumidamente o que aconteceu:")
@@ -346,7 +328,7 @@ if not st.session_state.autenticado:
     with st.expander("Eu vou ter que pagar alguma coisa antes do meu processo iniciar?"):
         st.write("Nossa análise inicial é 100% gratuita via WhatsApp. Só fechamos após mostrar o que está travando o seu perfil.")
 
-    # SEÇÃO DO BLOG CORRIGIDA (MUDADO DE 'Content' PARA 'Conteudo')
+    # SEÇÃO DO BLOG
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #FFD700;'>📰 Dicas da Nossa Equipe - Aprenda a Cuidar do Seu Crédito</h2>", unsafe_allow_html=True)
     if not blog_db.empty:
